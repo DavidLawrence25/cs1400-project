@@ -1,0 +1,7 @@
+%1%
+Hey, how are you doing today?
+I'm doing pretty well; how about you?
+I could be doing better, but I'm generally okay.
+%2%
+The definite integral of f(x) is defined as the signed area between f(x) and the x axis between the two bounds.
+%3%
