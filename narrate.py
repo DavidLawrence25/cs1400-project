@@ -1,3 +1,17 @@
+mapCharSet = {
+	"player": "🯅",
+	"item": "🯄",
+	"wall": "🮿",
+	"passageL": "🮵",
+	"passageR": "🮶",
+	"passageU": "🮸",
+	"passageD": "🮷",
+	"arrowL": "◀",
+	"arrowR": "▶",
+	"arrowU": "▲",
+	"arrowD": "▼"
+}
+
 def getString(addr: int) -> str:
 	# open the file
 	file = open("narration.txt", "r")
