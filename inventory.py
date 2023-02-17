@@ -12,7 +12,17 @@ class Item:
         if type(function) is str: self.function = function
         else: raise TypeError(errorHandler.throwError(errorHandler.ErrorType.INITVARTYPE, [f"{function=}".split("=")[0], type(function), str]))
 
-inv = {
-    0: Item("Notepad", 1, False, "openNotepad"),
-    1: Item("Sword", 1, True, "slashSword")
-}
+allItems = [
+    Item("Notepad", 1, False, "openNotepad"),
+    Item("Sword", 1, True, "slashSword")
+]
+
+inv = [
+    allItems[0],
+    allItems[1]
+]
+
+def GetInvItemNames() -> list:
+    output = []
+    for item in inv: output.append(item.name)
+    return output
