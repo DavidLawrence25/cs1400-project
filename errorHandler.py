@@ -4,7 +4,8 @@ from enum import auto
 class ErrorType(Enum):
     INITVARTYPE = auto(),
     UNKNOWNCMD = auto(),
-    NUMOFARGS = auto()
+    NUMOFARGS = auto(),
+    INVALIDARG = auto()
 
 def throwError(errorType: ErrorType, info: list) -> str:
     match errorType:
@@ -13,5 +14,7 @@ def throwError(errorType: ErrorType, info: list) -> str:
         case ErrorType.NUMOFARGS:
             pluralMod = ""
             if info[1] != 1: pluralMod = "s"
-            return f"Command {info[0]} got {info[1]} argument{pluralMod}, expected {info[2]}" 
+            return f"Command {info[0]} got {info[1]} argument{pluralMod}, expected {info[2]}"
+        case ErrorType.INVALIDARG:
+            return f"Argument {info[0]} is not valid for the command {info[1]}"
         case _: return "Error thrown without an error type"
