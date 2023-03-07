@@ -1,0 +1,14 @@
+[
+	{
+		"name": "Notepad",
+		"count": 1,
+		"expendable": false,
+		"function": "OpenNotepad"
+	},
+	{
+		"name": "Sword",
+		"count": 1,
+		"expendable": true,
+		"function": "SlashSword"
+	}
+]

@@ -38,22 +38,26 @@ ExpectedArgs = {
 PossibleArgs = {
 	"move": ["north", "south", "east", "west", "n", "s", "e", "w"],
 	"use": inventory.allItems,
-	"info": inventory.GetInvItemNames(),
+	"info": inventory.invNames,
 	"file": ["save", "load", "quit", "s", "l", "q"]
 }
+
+def UpdateInvItems() -> None:
+	PossibleArgs["info"] = inventory.invNames
 
 def GetInput() -> list[InputActions, str]:
 	cmd = ""; args = []
 	while True:
 		inputStr = input("Enter a Command: ")
-		cmd = inputStr.split(" ")[0]; args = inputStr.split[1:]
+		cmd = inputStr.split(" ")[0]; args = inputStr.split(" ")[1:]
 		if not cmd in cmdList:
 			print(errorHandler.throwError(errorHandler.ErrorType.UNKNOWNCMD, [cmd]))
 			continue
-		if len(args) == ExpectedArgs[cmd]:
+		if len(args) != ExpectedArgs[cmd]:
 			print(errorHandler.throwError(errorHandler.ErrorType.NUMOFARGS, [cmd, len(args), ExpectedArgs[cmd]]))
 			continue
-		if args[0] in PossibleArgs[cmd]:
+		if cmd == "info": UpdateInvItems()
+		if args[0] not in PossibleArgs[cmd]:
 			print(errorHandler.throwError(errorHandler.ErrorType.INVALIDARG, [args[0], cmd]))
 			continue
 		
