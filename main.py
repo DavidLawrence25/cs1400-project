@@ -1,4 +1,6 @@
 # Library Imports
 import narrate
+import util
 # Game Loop
-print(narrate.getString(3))
+map = narrate.GetMapString(util.Vector2(0,0))
+print(map)

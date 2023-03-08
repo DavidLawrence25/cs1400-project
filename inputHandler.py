@@ -51,16 +51,16 @@ def GetInput() -> list[InputActions, str]:
 		inputStr = input("Enter a Command: ")
 		cmd = inputStr.split(" ")[0]; args = inputStr.split(" ")[1:]
 		if not cmd in cmdList:
-			print(errorHandler.throwError(errorHandler.ErrorType.UNKNOWNCMD, [cmd]))
+			print(errorHandler.ThrowError(errorHandler.ErrorType.UNKNOWNCMD, [cmd]))
 			continue
 		if len(args) != ExpectedArgs[cmd]:
-			print(errorHandler.throwError(errorHandler.ErrorType.NUMOFARGS, [cmd, len(args), ExpectedArgs[cmd]]))
+			print(errorHandler.ThrowError(errorHandler.ErrorType.NUMOFARGS, [cmd, len(args), ExpectedArgs[cmd]]))
 			continue
 		if cmd == "info": UpdateInvItems()
 		if args[0] not in PossibleArgs[cmd]:
-			print(errorHandler.throwError(errorHandler.ErrorType.INVALIDARG, [args[0], cmd]))
+			print(errorHandler.ThrowError(errorHandler.ErrorType.INVALIDARG, [args[0], cmd]))
 			continue
-		
+
 		match cmd:
 			case "move":
 				match args[0]:

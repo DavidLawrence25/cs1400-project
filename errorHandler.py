@@ -7,7 +7,7 @@ class ErrorType(Enum):
 	NUMOFARGS = auto(),
 	INVALIDARG = auto()
 
-def throwError(errorType: ErrorType, info: list) -> str:
+def ThrowError(errorType: ErrorType, info: list) -> str:
 	match errorType:
 		case ErrorType.INITVARTYPE: return f"Tried to initialize variable {info[0]} with type {info[1]}, expected {info[2]}"
 		case ErrorType.UNKNOWNCMD: return f"Input {info[0]} is not a valid command"
