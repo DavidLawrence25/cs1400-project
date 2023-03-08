@@ -12,6 +12,8 @@ mapCharSet = {
 	"arrowD": "▼"
 }
 
+COMMENTCHAR = "#"
+
 def getString(addr: int) -> str:
 	# open the file
 	file = open("narration.txt", "r")
@@ -24,6 +26,7 @@ def getString(addr: int) -> str:
 	for line in file:
 		if isReading:
 			if line == addrEnd: break
+			elif line[0] == COMMENTCHAR: continue
 			else: text += line
 		if line == addrStart: isReading = True
 	file.close()

@@ -5,3 +5,9 @@ I could be doing better, but I'm generally okay.
 %2%
 The definite integral of f(x) is defined as the signed area between f(x) and the x axis between the two bounds.
 %3%
+This bit of narration is meant to test the commenting functionality.
+# here's a comment
+Here's some more narration in the third section.
+%4%
+
+# note: there must always be a new line after the last address.

@@ -43,20 +43,29 @@ invNames = [
 	"sword"
 ]
 
-def ObtainItem(name: str) -> None:
-	inv.append(allItems[name])
-	invNames.append(name)
-
-def DropItem(name: str) -> None:
+def GetItemStats(name: str) -> dict:
 	index = invNames.index(name)
-	inv[index]["count"] -= 1
-	if inv[index]["count"] == 0:
-		del inv[index]
-		invNames.remove("name")
+	return inv[index]
+
+def IncreaseItemCount(name: str) -> None:
+	if name in invNames:
+		item = GetItemStats(name)
+		item["count"] += 1
+	else:
+		inv.append(allItems[name])
+		invNames.append(name)
+
+def DecreaseItemCount(name: str) -> None:
+	item = GetItemStats(name)
+	item["count"] -= 1
+	if item["count"] == 0:
+		inv.remove(item)
+		invNames.remove(name)
 
 def UseItem(name: str) -> None:
 	funcName = allItems[name]["function"]
 	func = getattr(ItemFuncs, funcName)
+	if allItems[name]["expendable"]: DecreaseItemCount(name)
 	func()
 
 def SaveInv() -> None:
