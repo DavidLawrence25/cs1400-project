@@ -1,4 +1,5 @@
 import util
+import json
 
 mapCharSet = {
 	"player": "☻",
@@ -15,6 +16,53 @@ mapCharSet = {
 }
 
 COMMENTCHAR = "#"
+
+class TilePresets:
+	@staticmethod
+	def Air() -> dict:
+		return {
+			"type": "air",
+			"id": "air"
+		}
+	@staticmethod
+	def Item(name: str) -> dict:
+		return {
+			"type": "item",
+			"id": name
+		}
+	@staticmethod
+	def Wall() -> dict:
+		return {
+			"type": "wall",
+			"id": "wall"
+		}
+	@staticmethod
+	def Passage(direction: util.Vector2) -> dict:
+		return {
+			"type": "passage",
+			"id": direction
+		}
+	@staticmethod
+	def Arrow(direction: util.Vector2) -> dict:
+		return {
+			"type": "arrow",
+			"id": direction
+		}
+
+map = [
+	[
+		TilePresets.Air(),
+		TilePresets.Air(),
+		TilePresets.Air(),
+		TilePresets.Air(),
+		TilePresets.Wall(),
+		TilePresets.Wall(),
+		TilePresets.Wall(),
+		TilePresets.Wall(),
+		TilePresets.Air(),
+		TilePresets.Air()
+	]
+]
 
 def GetString(addr: int) -> str:
 	# open the file
@@ -34,39 +82,4 @@ def GetString(addr: int) -> str:
 	file.close()
 	return text.strip()
 
-def GetMapString(pos: util.Vector2) -> str:
-	# open the file
-	file = open("maps.txt", "r")
-	# make address strings to check against
-	addrStart = f"s%{pos.x},{pos.y}%\n"
-	addrEnd = f"e%{pos.x},{pos.y}%\n"
-	# get the text
-	text = ""
-	isReading = False
-	for line in file:
-		if isReading:
-			if line == addrEnd: break
-			elif line[0] == COMMENTCHAR: continue
-			for char in line:
-				match char:
-					case "a": text += mapCharSet["player"]
-					case "b": text += mapCharSet["item"]
-					case "c": text += mapCharSet["wall"]
-					case "d": text += mapCharSet["passageL"]
-					case "e": text += mapCharSet["passageR"]
-					case "f": text += mapCharSet["passageU"]
-					case "g": text += mapCharSet["passageD"]
-					case "h": text += mapCharSet["arrowL"]
-					case "i": text += mapCharSet["arrowR"]
-					case "j": text += mapCharSet["arrowU"]
-					case "k": text += mapCharSet["arrowD"]
-					case "-": text += " "
-			text += "\n"
-		if line == addrStart: isReading = True
-	file.close()
-	return text[:len(text) - 2]
-
-def ParseMapString(string: str) -> list:
-	lines = string.split("\n")
-	ls = [util.CharsFromStr(line) for line in lines]
-	return ls[:len(ls) - 1]
+def GetTile(pos: util.Vector2) -> dict: return map[int(pos.y)][int(pos.x)]
