@@ -22,6 +22,7 @@ class Vector2:
 		radAngle = pi * NegMult(self.x) + tau * NegMult(self.y) * PosMult(self.x) + atan(self.y / self.x)
 		if isRad: return radAngle
 		else: return RadToDeg(radAngle)
+	def ToIndex(self, w) -> int: return self.y * (w + 1) + self.x
 
 	@staticmethod
 	def Add(a, b): return Vector2(a.x + b.x, a.y + b.y)
@@ -29,6 +30,7 @@ class Vector2:
 	def Subtract(a, b): return Vector2(a.x - b.x, a.y - b.y)
 	@staticmethod
 	def Scale(a, scalar): return Vector2(a.x * scalar, a.y * scalar)
+	@staticmethod
 	def AngleBetween(a, b, isRad = True) -> float:
 		raw = abs(a.Angle(isRad) - b.Angle(isRad))
 		if isRad: return min(raw, tau - raw)
