@@ -1,0 +1,474 @@
+[
+	[
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			}
+		],
+		[
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			}
+		],
+		[
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		],
+		[
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "wall",
+				"id": "wall"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			},
+			{
+				"type": "air",
+				"id": "air"
+			}
+		]
+	],
+	[],
+	[],
+	[],
+	[],
+	[],
+	[],
+	[],
+	[]
+]

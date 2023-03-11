@@ -2,5 +2,5 @@
 import narrate
 import util
 # Game Loop
-tile = narrate.GetTile(util.Vector2(3,0))
-print(tile)
+room = narrate.LoadMapFromFile(util.Vector2(0, 0))
+print(narrate.GetMapString(room))
