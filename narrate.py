@@ -16,7 +16,7 @@ mapCharSet = {
 	"arrowD": "▼"
 }
 
-MAPSIZE = util.Vector2(3, 3)
+MAPSIZE = util.Vector2(3, 3) # the full world map size
 COMMENTCHAR = "#"
 
 class TilePresets:
@@ -209,9 +209,10 @@ def GetString(addr: int) -> str:
 			if line == addrStart: isReading = True
 	return text.strip()
 
-def LoadMapFromFile(pos: util.Vector2) -> list[list[dict]]:
+def LoadMapFromFile(pos: util.Vector2) -> None:
+	global map
 	with open("maps.json", "r") as file: data = json.load(file)
-	return data[pos.ToIndex(MAPSIZE.x)]
+	map = data[pos.ToIndex(MAPSIZE.x)]
 
 def SaveMapToFile(map: list, pos: util.Vector2) -> None:
 	with open("maps.json", "r") as file:

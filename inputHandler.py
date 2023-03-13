@@ -63,7 +63,7 @@ def UpdateInvItems() -> None:
 def GetInput() -> list:
 	cmd = ""; args = []
 	while True:
-		inputStr = input("Enter a Command: ")
+		inputStr = input("> ")
 		cmd = inputStr.split(" ")[0]; args = inputStr.split(" ")[1:]
 		if not cmd in cmdList:
 			print(errorHandler.ThrowError(errorHandler.ErrorType.UNKNOWNCMD, [cmd]))

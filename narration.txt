@@ -1,13 +1,20 @@
 %1%
-Hey, how are you doing today?
-I'm doing pretty well; how about you?
-I could be doing better, but I'm generally okay.
+-- Command List --
+move [direction]: Move in a cardinal direction
+	Possible Directions:
+		n / north
+		s / south
+		e / east
+		w / west
+use [item]:       Use an item if possible
+info [item]:      Display the details of an item inside your inventory
+inv:              Display the inventory
+?:                Display this list
+file [option]:    Save, load, or quit the game
+	Possible Options:
+		save
+		load
+		quit
 %2%
-The definite integral of f(x) is defined as the signed area between f(x) and the x axis between the two bounds.
-%3%
-This bit of narration is meant to test the commenting functionality.
-# here's a comment
-Here's some more narration in the third section.
-%4%
 
 # note: there must always be a new line after the last address.
