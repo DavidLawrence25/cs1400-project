@@ -2,6 +2,21 @@ from enum import Enum
 from enum import auto
 import errorHandler
 import inventory
+import util
+
+class Player:
+	def __init__(self, pos: util.Vector2) -> None:
+		self.pos = pos
+	def __str__(self) -> str: return f"Player Object at {self.pos}"
+
+	def Move(self, direction: str) -> None:
+		match direction:
+			case "l": inputVector = util.Vector2.Left()
+			case "r": inputVector = util.Vector2.Right()
+			case "u": inputVector = util.Vector2.Up()
+			case "d": inputVector = util.Vector2.Down()
+			case _: raise ValueError(errorHandler.ThrowError(errorHandler.ErrorType.INVALIDARG, [direction, "move"]))
+		self.pos = util.Vector2.Add(self.pos, inputVector)
 
 class InputActions(Enum):
 	MOVEUP = auto(),
@@ -45,7 +60,7 @@ PossibleArgs = {
 def UpdateInvItems() -> None:
 	PossibleArgs["info"] = inventory.invNames
 
-def GetInput() -> list[InputActions, str]:
+def GetInput() -> list:
 	cmd = ""; args = []
 	while True:
 		inputStr = input("Enter a Command: ")

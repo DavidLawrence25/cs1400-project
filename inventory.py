@@ -13,8 +13,10 @@ class Item:
 		else: raise TypeError(errorHandler.ThrowError(errorHandler.ErrorType.INITVARTYPE, [f"{function=}".split("=")[0], type(function), str]))
 
 class ItemFuncs:
+	@staticmethod
 	def OpenNotepad():
 		print("You opened your notepad")
+	@staticmethod
 	def SlashSword():
 		print("You slashed your sword and missed (haha)")
 

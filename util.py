@@ -37,3 +37,12 @@ class Vector2:
 		else: return min(raw, 360 - raw)
 	@staticmethod
 	def DotProd(a, b) -> int | float: return a.Length() * b.Length() * cos(Vector2.AngleBetween(a, b))
+
+	@staticmethod
+	def Up(): return Vector2(0, 1)
+	@staticmethod
+	def Down(): return Vector2(0, -1)
+	@staticmethod
+	def Left(): return Vector2(-1, 0)
+	@staticmethod
+	def Right(): return Vector2(1, 0)
