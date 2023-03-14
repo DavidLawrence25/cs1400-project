@@ -37,6 +37,7 @@ cmdList = [
 	"use",
 	"info",
 	"inv",
+	"help",
 	"?",
 	"file"
 ]
@@ -46,6 +47,7 @@ ExpectedArgs = {
 	"use": 1,
 	"info": 1,
 	"inv": 0,
+	"help": 0,
 	"?": 0,
 	"file": 1
 }
@@ -72,9 +74,11 @@ def GetInput() -> list:
 			print(errorHandler.ThrowError(errorHandler.ErrorType.NUMOFARGS, [cmd, len(args), ExpectedArgs[cmd]]))
 			continue
 		if cmd == "info": UpdateInvItems()
-		if args[0] not in PossibleArgs[cmd]:
-			print(errorHandler.ThrowError(errorHandler.ErrorType.INVALIDARG, [args[0], cmd]))
-			continue
+		try:
+			if args[0] not in PossibleArgs[cmd]:
+				print(errorHandler.ThrowError(errorHandler.ErrorType.INVALIDARG, [args[0], cmd]))
+				continue
+		except IndexError: pass
 
 		match cmd:
 			case "move":
@@ -86,6 +90,7 @@ def GetInput() -> list:
 			case "use": return [InputActions.USEITEM, args[0]]
 			case "info": return [InputActions.ITEMINFO, args[0]]
 			case "inv": return [InputActions.VIEWINV, ""]
+			case "help": return [InputActions.CMDLIST, ""]
 			case "?": return [InputActions.HINT, ""]
 			case "file":
 				match args[0]:
