@@ -75,3 +75,11 @@ def SaveInv() -> None:
 	file = open("inv.json", "w")
 	file.write(jsonStr)
 	file.close()
+
+def GetInvString() -> str:
+	output = "-- INVENTORY --\n"
+	for item in invNames:
+		displayName = allItems[item]["name"]
+		displayCount = allItems[item]["count"]
+		output += f"{displayName:>15} | {displayCount}\n"
+	return output

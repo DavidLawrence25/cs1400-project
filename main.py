@@ -16,7 +16,7 @@ while True:
 		case inputHandler.InputActions.MOVEDOWN: player.Move("d")
 		case inputHandler.InputActions.USEITEM: inventory.UseItem(arg)
 		case inputHandler.InputActions.ITEMINFO: pass # make a function to print the item info from a specific address in narration.txt
-		case inputHandler.InputActions.VIEWINV: pass # make a function to print the current inventory
+		case inputHandler.InputActions.VIEWINV: print(inventory.GetInvString())
 		case inputHandler.InputActions.HINT: pass # make a function to print the hint based on the progress and/or room
 		case inputHandler.InputActions.CMDLIST: print(narrate.GetString(1))
 		case inputHandler.InputActions.SAVE:
