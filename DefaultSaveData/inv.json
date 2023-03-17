@@ -1,0 +1,8 @@
+[
+	{
+		"name": "Notepad",
+		"count": 1,
+		"expendable": false,
+		"function": "OpenNotepad"
+	}
+]

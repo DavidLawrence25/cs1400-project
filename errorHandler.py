@@ -1,12 +1,15 @@
+# Built-In Libraries
 from enum import Enum
 from enum import auto
 
+# Classes
 class ErrorType(Enum):
 	INITVARTYPE = auto(),
 	UNKNOWNCMD = auto(),
 	NUMOFARGS = auto(),
 	INVALIDARG = auto()
 
+# Functions
 def ThrowError(errorType: ErrorType, info: list) -> str:
 	match errorType:
 		case ErrorType.INITVARTYPE: return f"Tried to initialize variable {info[0]} with type {info[1]}, expected {info[2]}"
