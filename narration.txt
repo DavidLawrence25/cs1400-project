@@ -1,20 +1,18 @@
 %1%
--- Command List --
+-- COMMAND LIST --
 move [direction]: Move in a cardinal direction
-	Possible Directions:
-		n / north
-		s / south
-		e / east
-		w / west
 use [item]:       Use an item if possible
 info [item]:      Display the details of an item inside your inventory
 inv:              Display the inventory
 ?:                Display this list
 file [option]:    Save, load, or quit the game
-	Possible Options:
-		save
-		load
-		quit
 %2%
+Somebody once told me the world is gonna roll me
+I ain't the sharpest tool in the shed
+She was lookin' kinda dumb with her finger and her thumb
+in the shape of an L on her forehead
+I don't really know what else to write here...
+Yeah, we're just gonna roll with this.
+%3%
 
 # note: there must always be a new line after the last address.

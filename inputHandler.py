@@ -38,7 +38,7 @@ class Player:
 		newTile = narrate.map[newPos.y][newPos.x]
 		match newTile["type"]:
 			case "wall":
-				print("A wall blocks your path.")
+				narrate.feedback = "A wall stands in your path."
 				return
 			case "passage":
 				# room changing crap

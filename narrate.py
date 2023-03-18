@@ -1,6 +1,6 @@
 # Built-In Libraries
 from json import dump, load
-from os import remove
+from os import remove, get_terminal_size, system
 # Custom Libraries
 from util import Vector2
 
@@ -20,6 +20,7 @@ mapCharSet = {
 }
 
 map = []
+feedback = ""
 
 # Classes
 class TilePresets:
@@ -115,3 +116,16 @@ def GetMapString(map: list[list[dict]]) -> str:
 						case "d": outputStr += mapCharSet["passageD"]
 		outputStr += "\n"
 	return outputStr
+
+def Display(mapStr: str, narration: str, feedback: str) -> None:
+	mapLines = mapStr.splitlines(); textLines = feedback.splitlines();
+	if feedback != "": textLines.append("")
+	for line in narration.splitlines(): textLines.append(line)
+	consoleW = get_terminal_size().columns; mapW = len(map[0]); textW = consoleW - mapW
+	iterCount = len(mapLines) if len(mapLines) > len(textLines) else len(textLines)
+	outputStr = ""
+	for i in range(iterCount):
+		if len(mapLines) > i and len(textLines) > i: outputStr += f"{textLines[i]:<{textW}}{mapLines[i]}\n"
+		elif len(textLines) > i: outputStr += f"{textLines[i]:<{textW}}\n"
+		else: outputStr += f"{mapLines[i]:>{consoleW}}\n"
+	system("cls"); print(outputStr)

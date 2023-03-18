@@ -1,9 +1,10 @@
-# Library Imports
+# Built-In Libraries
+import json
+# Custom Libraries
 import narrate
 import inputHandler
 import inventory
 import util
-import json
 
 # Variable Declarations
 vars = {}
@@ -32,7 +33,8 @@ def LoadGame() -> None:
 # Game Loop
 LoadGame() # !IMPORTANT: This will be called from the title screen.
 while True:
-	print(narrate.GetMapString(narrate.map))
+	narrate.Display(narrate.GetMapString(narrate.map), narrate.GetString(2), narrate.feedback)
+	narrate.feedback = ""
 	inputAction, arg = inputHandler.GetInput()
 	match inputAction:
 		case inputHandler.InputActions.MOVELEFT: vars["player"].Move("l")
@@ -41,9 +43,9 @@ while True:
 		case inputHandler.InputActions.MOVEDOWN: vars["player"].Move("d")
 		case inputHandler.InputActions.USEITEM: inventory.UseItem(arg)
 		case inputHandler.InputActions.ITEMINFO: pass # make a function to print the item info from a specific address in narration.txt
-		case inputHandler.InputActions.VIEWINV: print(inventory.GetInvString())
+		case inputHandler.InputActions.VIEWINV: narrate.feedback = inventory.GetInvString()
 		case inputHandler.InputActions.HINT: pass # make a function to print the hint based on the progress and/or room
-		case inputHandler.InputActions.CMDLIST: print(narrate.GetString(1))
+		case inputHandler.InputActions.CMDLIST: narrate.feedback = narrate.GetString(1)
 		case inputHandler.InputActions.SAVE: SaveGame()
 		case inputHandler.InputActions.LOAD: LoadGame()
 		case inputHandler.InputActions.QUIT:
