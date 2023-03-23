@@ -4,87 +4,87 @@ from json import load, dumps
 # Classes
 class ItemFuncs:
 	@staticmethod
-	def OpenNotepad():
+	def open_notepad():
 		print("You opened your notepad")
 	@staticmethod
-	def SlashSword():
+	def slash_sword():
 		print("You slashed your sword and missed (haha)")
 
 # Constants
-ITEMPRESETS = {
+ITEM_PRESETS = {
 	"notepad": {
 		"name": "Notepad",
 		"count": 1,
 		"expendable": False,
-		"function": "OpenNotepad"
+		"function": "open_notepad"
 	},
 	"sword": {
 		"name": "Sword",
 		"count": 1,
 		"expendable": True,
-		"function": "SlashSword"
+		"function": "slash_sword"
 	}
 }
 
 # Variables
 inv = [
-	ITEMPRESETS["notepad"],
-	ITEMPRESETS["sword"]
+	ITEM_PRESETS["notepad"],
+	ITEM_PRESETS["sword"]
 ]
 
-invNames = [
+inv_names = [
 	"notepad",
 	"sword"
 ]
 
 # Functions
-def GetItemStats(name: str) -> dict:
+def get_item_stats(name: str) -> dict:
 	'''Get the current stats for an item in the inventory.'''
-	index = invNames.index(name)
+	index = inv_names.index(name)
 	return inv[index]
 
-def IncreaseItemCount(name: str) -> None:
+def increase_item_count(name: str) -> None:
 	'''Adds one to the count of a particular item.'''
-	if name in invNames:
-		item = GetItemStats(name)
+	if name in inv_names:
+		item = get_item_stats(name)
 		item["count"] += 1
 	else:
-		inv.append(ITEMPRESETS[name])
-		invNames.append(name)
+		inv.append(ITEM_PRESETS[name])
+		inv_names.append(name)
 
-def DecreaseItemCount(name: str) -> None:
+def decrease_item_count(name: str) -> None:
 	'''Subtracts one to the count of a particular item.'''
-	item = GetItemStats(name)
+	item = get_item_stats(name)
 	item["count"] -= 1
 	if item["count"] == 0:
 		inv.remove(item)
-		invNames.remove(name)
+		inv_names.remove(name)
 
-def UseItem(name: str) -> None:
+def use_item(name: str) -> None:
 	'''Run the function attached to a particular item.'''
-	funcName = ITEMPRESETS[name]["function"]
-	func = getattr(ItemFuncs, funcName)
-	if ITEMPRESETS[name]["expendable"]: DecreaseItemCount(name)
+	func_name = ITEM_PRESETS[name]["function"]
+	func = getattr(ItemFuncs, func_name)
+	if ITEM_PRESETS[name]["expendable"]: decrease_item_count(name)
 	func()
 
-def SaveInv() -> None:
+def save_inv() -> None:
 	'''Saves the inventory to JSON files.'''
-	jsonStr = dumps(inv, indent="\t")
-	with open(r"SaveFile\inv.json", "w") as file: file.write(jsonStr)
-	jsonStr = dumps(invNames, indent="\t")
-	with open(r"SaveFile\invNames.json", "w") as file: file.write(jsonStr)
+	inv_data = dumps(inv, indent="\t")
+	with open(r"SaveFile\inv.json", "w") as file: file.write(inv_data)
+	inv_names_data = dumps(inv_names, indent="\t")
+	with open(r"SaveFile\inv_names.json", "w") as file: file.write(inv_names_data)
 
-def LoadInv() -> None:
+def load_inv() -> None:
 	'''Load the inventory from JSON files.'''
-	global inv, invNames
+	global inv, inv_names
 	with open(r"SaveFile\inv.json", "r") as file: inv = load(file)
-	with open(r"SaveFile\invNames.json", "r") as file: invNames = load(file)
+	with open(r"SaveFile\inv_names.json", "r") as file: inv_names = load(file)
 
-def GetInvString() -> str:
+def get_inv_string() -> str:
 	'''Returns a string with all the items in the inventory.'''
 	output = "-- INVENTORY --\n"
-	for item in invNames:
-		displayName = ITEMPRESETS[item]["name"]
-		displayCount = ITEMPRESETS[item]["count"]
-		output += f"{displayName:<10} | {displayCount:>2}\n"
+	for item in inv_names:
+		name = ITEM_PRESETS[item]["name"]
+		count = ITEM_PRESETS[item]["count"]
+		output += f"{name:<10} | {count:>2}\n"
 	return output

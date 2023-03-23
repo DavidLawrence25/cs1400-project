@@ -5,11 +5,9 @@ from os import remove, get_terminal_size, system
 from util import Vector2
 
 # Constants
-MAPSIZE = Vector2(3, 3) # the full world map size
-COMMENTCHAR = "#"
-
-# Variables
-mapCharSet = {
+MAP_SIZE = Vector2(3, 3) # the full world map size
+COMMENT_CHAR = "#"
+MAP_CHAR_SET = {
 	"player": "☻",
 	"item": "✱",
 	"wall": "█",
@@ -19,6 +17,7 @@ mapCharSet = {
 	"passageD": "⇊"
 }
 
+# Variables
 map = []
 feedback = ""
 
@@ -26,106 +25,106 @@ feedback = ""
 class TilePresets:
 	'''The tile presets for building the map.'''
 	@staticmethod
-	def Air() -> dict:
+	def air() -> dict:
 		return {
 			"type": "air",
 			"id": "air"
 		}
 	@staticmethod
-	def Player() -> dict:
+	def player() -> dict:
 		return {
 			"type": "player",
 			"id": "player"
 		}
 	@staticmethod
-	def Item(name: str) -> dict:
+	def item(name: str) -> dict:
 		return {
 			"type": "item",
 			"id": name
 		}
 	@staticmethod
-	def Wall() -> dict:
+	def wall() -> dict:
 		return {
 			"type": "wall",
 			"id": "wall"
 		}
 	@staticmethod
-	def Passage(direction: Vector2) -> dict:
+	def passage(direction: Vector2) -> dict:
 		return {
 			"type": "passage",
 			"id": direction
 		}
 
 # Functions
-def GetString(addr: int) -> str:
+def get_string(addr: int) -> str:
 	'''Return a string from the narration file.'''
 	# open the file
 	with open("narration.txt", "r") as file:
 		# make address strings to check against
-		addrStart = f"%{addr}%\n"
-		addrEnd = f"%{addr + 1}%\n"
+		addr_start = f"%{addr}%\n"
+		addr_end = f"%{addr + 1}%\n"
 		# get the text
 		text = ""
-		isReading = False
+		is_reading = False
 		for line in file:
-			if isReading:
-				if line == addrEnd: break
-				elif line[0] == COMMENTCHAR: continue
+			if is_reading:
+				if line == addr_end: break
+				elif line[0] == COMMENT_CHAR: continue
 				else: text += line
-			if line == addrStart: isReading = True
+			if line == addr_start: is_reading = True
 	return text.strip()
 
-def PlayerlessMap() -> list[list[dict]]:
+def playerless_map() -> list[list[dict]]:
 	'''Return a version of the map without the player.'''
 	output = []
 	for row in map:
-		newRow = [TilePresets.Air() if tile == TilePresets.Player() else tile for tile in row]
-		output.append(newRow)
+		new_row = [TilePresets.air() if tile == TilePresets.player() else tile for tile in row]
+		output.append(new_row)
 	return output
 
-def LoadMapFromFile(pos: Vector2) -> None:
+def load_map_from_file(pos: Vector2) -> None:
 	'''Loads a room from maps.json into the map variable.'''
 	global map
-	with open("SaveFile\maps.json", "r") as file: data = load(file)
-	map = data[pos.ToIndex(MAPSIZE.x)]
+	with open("SaveFile\maps.json", "r") as file: map_data = load(file)
+	map = map_data[pos.to_index(MAP_SIZE.x)]
 
-def SaveMapToFile(pos: Vector2) -> None:
+def save_map_to_file(pos: Vector2) -> None:
 	'''Saves the current room to the specified position on the map.'''
 	with open(r"SaveFile\maps.json", "r") as file:
-		data = load(file)
-		data[pos.ToIndex(MAPSIZE.x)] = PlayerlessMap()
+		map_data = load(file)
+		map_data[pos.to_index(MAP_SIZE.x)] = playerless_map()
 
 	remove(r"SaveFile\maps.json")
-	with open(r"SaveFile\maps.json", "w") as file: dump(data, file, indent = "\t")
+	with open(r"SaveFile\maps.json", "w") as file: dump(map_data, file, indent = "\t")
 
-def GetMapString(map: list[list[dict]]) -> str:
+def get_map_string(map: list[list[dict]]) -> str:
 	'''Returns a printable version of the current room.'''
-	outputStr = ""
+	output = ""
 	for row in map:
 		for tile in row:
 			match tile["type"]:
-				case "air": outputStr += " "
-				case "player": outputStr += mapCharSet["player"]
-				case "item": outputStr += mapCharSet["item"]
-				case "wall": outputStr += mapCharSet["wall"]
+				case "air": output += " "
+				case "player": output += MAP_CHAR_SET["player"]
+				case "item": output += MAP_CHAR_SET["item"]
+				case "wall": output += MAP_CHAR_SET["wall"]
 				case "passage":
 					match tile["id"]:
-						case "l": outputStr += mapCharSet["passageL"]
-						case "r": outputStr += mapCharSet["passageR"]
-						case "u": outputStr += mapCharSet["passageU"]
-						case "d": outputStr += mapCharSet["passageD"]
-		outputStr += "\n"
-	return outputStr
+						case "l": output += MAP_CHAR_SET["passageL"]
+						case "r": output += MAP_CHAR_SET["passageR"]
+						case "u": output += MAP_CHAR_SET["passageU"]
+						case "d": output += MAP_CHAR_SET["passageD"]
+		output += "\n"
+	return output
 
-def Display(mapStr: str, narration: str, feedback: str) -> None:
-	mapLines = mapStr.splitlines(); textLines = feedback.splitlines();
-	if feedback != "": textLines.append("")
-	for line in narration.splitlines(): textLines.append(line)
-	consoleW = get_terminal_size().columns; mapW = len(map[0]); textW = consoleW - mapW
-	iterCount = len(mapLines) if len(mapLines) > len(textLines) else len(textLines)
-	outputStr = ""
-	for i in range(iterCount):
-		if len(mapLines) > i and len(textLines) > i: outputStr += f"{textLines[i]:<{textW}}{mapLines[i]}\n"
-		elif len(textLines) > i: outputStr += f"{textLines[i]:<{textW}}\n"
-		else: outputStr += f"{mapLines[i]:>{consoleW}}\n"
-	system("cls"); print(outputStr)
+def display(map_str: str, narration: str, feedback: str) -> None:
+	map_lines = map_str.splitlines(); text_lines = feedback.splitlines();
+	if feedback != "": text_lines.append("")
+	text_lines.append(*narration.splitlines())
+	terminal_w = get_terminal_size().columns; map_w = len(map[0]); text_w = terminal_w - map_w
+	iter_count = len(map_lines) if len(map_lines) > len(text_lines) else len(text_lines)
+	output = ""
+	for i in range(iter_count):
+		if len(map_lines) > i and len(text_lines) > i: output += f"{text_lines[i]:<{text_w}}{map_lines[i]}\n"
+		elif len(text_lines) > i: output += f"{text_lines[i]:<{text_w}}\n"
+		else: output += f"{map_lines[i]:>{terminal_w}}\n"
+	system("cls"); print(output)

@@ -2,58 +2,58 @@
 import json
 # Custom Libraries
 import narrate
-import inputHandler
+import input_handler
 import inventory
 import util
 
 # Variable Declarations
 vars = {}
-lastAction = None
+prev_action = None
 
 # Functions
-def SaveGame() -> None:
-	narrate.SaveMapToFile(vars["currentRoom"])
-	inventory.SaveInv()
+def save_game() -> None:
+	narrate.save_map_to_file(vars["currentRoom"])
+	inventory.save_inv()
 	# save variables
-	jsonVars = {k: v.ToDict() for k, v in vars.items()}
-	jsonStr = json.dumps(jsonVars, indent="\t")
-	with open(r"SaveFile\variables.json", "w") as file: file.write(jsonStr)
+	parsed_vars = {key: val.to_dict() for key, val in vars.items()}
+	vars_data = json.dumps(parsed_vars, indent="\t")
+	with open(r"SaveFile\variables.json", "w") as file: file.write(vars_data)
 	# more save functions?
 
-def LoadGame() -> None:
+def load_game() -> None:
 	# load variables
 	with open(r"SaveFile\variables.json", "r") as file: data = json.load(file)
-	vars["player"] = inputHandler.Player.FromDict(data["player"])
-	vars["currentRoom"] = util.Vector2.FromDict(data["currentRoom"])
+	vars["player"] = input_handler.Player.from_dict(data["player"])
+	vars["currentRoom"] = util.Vector2.from_dict(data["currentRoom"])
 	# map and inventory
-	narrate.LoadMapFromFile(vars["currentRoom"])
-	inventory.LoadInv()
+	narrate.load_map_from_file(vars["currentRoom"])
+	inventory.load_inv()
 	# more load functions?
 
 # Game Loop
-LoadGame() # !IMPORTANT: This will be called from the title screen.
+load_game() # !IMPORTANT: This will be called from the title screen.
 while True:
-	narrate.Display(narrate.GetMapString(narrate.map), narrate.GetString(2), narrate.feedback)
+	narrate.display(narrate.get_map_string(narrate.map), narrate.get_string(2), narrate.feedback)
 	narrate.feedback = ""
-	inputAction, arg = inputHandler.GetInput()
-	match inputAction:
-		case inputHandler.InputActions.MOVELEFT: vars["player"].Move("l")
-		case inputHandler.InputActions.MOVERIGHT: vars["player"].Move("r")
-		case inputHandler.InputActions.MOVEUP: vars["player"].Move("u")
-		case inputHandler.InputActions.MOVEDOWN: vars["player"].Move("d")
-		case inputHandler.InputActions.USEITEM: inventory.UseItem(arg)
-		case inputHandler.InputActions.ITEMINFO: pass # make a function to print the item info from a specific address in narration.txt
-		case inputHandler.InputActions.VIEWINV: narrate.feedback = inventory.GetInvString()
-		case inputHandler.InputActions.HINT: pass # make a function to print the hint based on the progress and/or room
-		case inputHandler.InputActions.CMDLIST: narrate.feedback = narrate.GetString(1)
-		case inputHandler.InputActions.SAVE: SaveGame()
-		case inputHandler.InputActions.LOAD: LoadGame()
-		case inputHandler.InputActions.QUIT:
-			if lastAction in inputHandler.MUTABLEACTIONS:
+	input_action, arg = input_handler.get_input()
+	match input_action:
+		case input_handler.InputActions.MOVE_LEFT: vars["player"].Move("l")
+		case input_handler.InputActions.MOVE_RIGHT: vars["player"].Move("r")
+		case input_handler.InputActions.MOVE_UP: vars["player"].Move("u")
+		case input_handler.InputActions.MOVE_DOWN: vars["player"].Move("d")
+		case input_handler.InputActions.USE_ITEM: inventory.use_item(arg)
+		case input_handler.InputActions.ITEM_INFO: pass # make a function to print the item info from a specific address in narration.txt
+		case input_handler.InputActions.VIEW_INV: narrate.feedback = inventory.get_inv_string()
+		case input_handler.InputActions.HINT: pass # make a function to print the hint based on the progress and/or room
+		case input_handler.InputActions.CMD_LIST: narrate.feedback = narrate.get_string(1)
+		case input_handler.InputActions.SAVE: save_game()
+		case input_handler.InputActions.LOAD: load_game()
+		case input_handler.InputActions.QUIT:
+			if prev_action in input_handler.MUTABLE_ACTIONS:
 				response = input("You have unsaved progress. Would you like to save first? > ")
 				match response:
-					case "yes" | "y": SaveGame()
+					case "yes" | "y": save_game()
 					case "no" | "n": break
 					case "cancel" | "c": continue
 			else: break
-	lastAction = inputAction
+	prev_action = input_action
