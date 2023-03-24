@@ -14,6 +14,12 @@ def chars_from_str(string: str) -> list:
 	chars[:0] = string
 	return chars
 
+def generate_2d_list(filler, dimensions: tuple) -> list[list]:
+	output = []
+	for i in range(dimensions[1]):
+		output.append([filler for j in range(dimensions[0])])
+	return output
+
 # Classes
 class Vector2:
 	'''A vector with an x and y component.'''
@@ -40,7 +46,7 @@ class Vector2:
 		else: return rad_to_deg(theta)
 	def to_index(self, arr_width: int) -> int:
 		'''Returns the index corresponding to a position on a 2D array.'''
-		return self.y * (arr_width + 1) + self.x
+		return int(self.y * (arr_width + 1) + self.x)
 
 	@staticmethod
 	def add(a, b): return Vector2(a.x + b.x, a.y + b.y)
