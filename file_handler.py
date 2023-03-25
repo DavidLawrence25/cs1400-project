@@ -9,15 +9,19 @@ FILE_PATHS = {
 	"variables": APP_ROOT / "SaveFile" / "variables.json"
 }
 
-class SaveFile(object):
+class SaveFile(interface.Listener):
 	def __init__(self, maps, inventory, variables) -> None:
 		self.__maps = maps
 		self.__inventory = inventory
 		self.__variables = variables
-		self.on_file_save = interface.Event()
-		self.on_file_load = interface.Event()
-		self.on_file_read = interface.Event()
-		self.on_file_written = interface.Event()
+
+		self.on_file_save = interface.Event("on_file_save")
+		self.on_file_load = interface.Event("on_file_load")
+		self.on_file_read = interface.Event("on_file_read")
+		self.on_file_written = interface.Event("on_file_written")
+
+		self.subscribe("on_input_parsed", self.on_file_save)
+		self.subscribe("on_input_parsed", self.on_file_load)
 
 	def save_file(self) -> None:
 		with open(FILE_PATHS["maps"], "w") as file:
