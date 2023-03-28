@@ -9,6 +9,19 @@ import inventory
 import narrate
 
 # Classes
+class BetterPlayer(interface.Listener):
+	def __init__(self, pos: tuple[int]) -> None:
+		self.__pos = pos
+		#self.subscribe("", )
+	
+	@property
+	def pos(self) -> tuple[int]: return self.__pos
+
+	@pos.setter
+	def pos(self, p: tuple[int]) -> None:
+		if len(p) != 2: pass #! ERROR
+		if type(p[0]) is not int or type(p[1]) is not int: pass #! ERROR
+
 class Player:
 	'''A player object.'''
 	def __init__(self, pos: Vector2) -> None:
