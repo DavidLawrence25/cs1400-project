@@ -38,13 +38,15 @@ class DirectionalTile(Tile):
 		if new_direction not in ("n", "s", "e", "w"): raise ValueError
 		self.__direction = new_direction
 
-class Area(object):
-	def __init__(self,
-				name: str | None = None,
-				size: tuple | None = None) -> None:
-		self.__name = name if name is not None else "Area"
-		self.__size = size if size is not None else (24, 12)
+class Area(interface.Listener):
+	def __init__(self, name: str = "Area", size: tuple = (24, 12)) -> None:
+		self.__name = name
+		self.__size = size
 		self.__tiles = util.generate_2d_list(Tile(), self.__size)
+
+		self.on_get_tile = interface.Event("on_get_tile")
+
+		self.subscribe("on_try_move", self.get_tile)
 
 	def __str__(self) -> str:
 		string = f"{self.__name}\n\n"
@@ -60,6 +62,18 @@ class Area(object):
 					case _: string += MAP_CHAR_SET[tile.name]
 			string += "\n"
 		return string
+
+	def get_tile(self, pos: util.Vector2Int, property: str = ""):
+		tile = self.__tiles[pos.y][pos.x]
+		return_val = None
+		match property:
+			case "name": return_val = tile.name
+			case "direction":
+				if type(tile) is DirectionalTile: return_val = tile.direction
+				else: raise AttributeError
+			case _: return_val = tile
+
+		self.on_get_tile(pos, return_val)
 
 	def playerless(self):
 		new_map = self.__tiles

@@ -4,23 +4,56 @@ from enum import auto
 from json import dumps, loads
 # Custom Libraries
 import interface
+from util import Vector2Int
 from error_handler import throw_error, ErrorType
 import inventory
 import narrate
 
 # Classes
 class BetterPlayer(interface.Listener):
-	def __init__(self, pos: tuple[int]) -> None:
-		self.__pos = pos
-		#self.subscribe("", )
-	
-	@property
-	def pos(self) -> tuple[int]: return self.__pos
+	def __init__(self, pos: Vector2Int) -> None:
+		self.pos = pos
 
-	@pos.setter
-	def pos(self, p: tuple[int]) -> None:
-		if len(p) != 2: pass #! ERROR
-		if type(p[0]) is not int or type(p[1]) is not int: pass #! ERROR
+		self.on_try_move = interface.Event("on_try_move")
+
+		#* IMPORTANT NOTE
+		#* I imagine this will cause issues if any other class calls this
+		#* function, since we only want to run the move_or_collide method
+		#* when we tried to move. Here are my two main ideas for solutions:
+		#* 1. modify the interface so an event sends an address along with
+		#*    it and only calls the functions that match up with that address
+		#* 2. throw this subscribe statement right before line 38 and
+		#*    unsubscribe immediately after we're done
+		self.subscribe("on_get_tile", self.move_or_collide)
+		#self.subscribe("", )
+
+	def try_move(self, direction: str) -> None:
+		match direction:
+			case "l": input_vector = Vector2Int.left()
+			case "r": input_vector = Vector2Int.right()
+			case "u": input_vector = Vector2Int.down()
+			case "d": input_vector = Vector2Int.up()
+			case _: return #! ERROR
+
+		new_pos = self.pos + input_vector
+		self.on_try_move(new_pos, "name")
+
+	def move_or_collide(self, new_pos: Vector2Int, tile_name: str) -> None:
+		should_continue = False
+		match tile_name:
+			case "wall":
+				pass
+				#* send feedback to narrate.py
+			case "passage":
+				pass
+				#* do some room manipulation stuff
+			case "item":
+				should_continue = True
+				#* pick up the item
+		if should_continue:
+			#* set the previous position to air on map display
+			#* set the new position to player on map display
+			self.pos = new_pos
 
 class Player:
 	'''A player object.'''
