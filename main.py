@@ -1,6 +1,18 @@
 # Modules
 ## Built-In
 from enum import Enum, auto
+from pathlib import Path
+import pickle
+
+APP_ROOT = Path(".")
+SAVE_FILE_PATHS = {
+	"world": APP_ROOT / "SaveFile" / "world.pkl",
+	"player": APP_ROOT / "SaveFile" / "player.pkl"
+}
+DEFAULT_FILE_PATHS = {
+	"world": APP_ROOT / "DefaultSaveData" / "world.pkl",
+	"player": APP_ROOT / "DefaultSaveData" / "player.pkl"
+}
 
 import logging
 logging.basicConfig(
@@ -22,8 +34,10 @@ class Vector2Int:
 		"""Initializes the instance with x and y components.
 
 		Args:
-			x: An integer describing the horizontal component of the vector
-			y: An integer describing the vertical component of the vector
+			x: An integer describing the horizontal
+			component of the vector
+			y: An integer describing the vertical
+			component of the vector
 		"""
 		self.__x = x
 		self.__y = y
@@ -144,6 +158,11 @@ class Area:
 		self.pos = pos
 		self.size = size
 		self.tiles = [[Tile.air() for _ in range(size.x)] * size.y]
+		self.passages = tuple() # ((passage_a, passage_b, that_area))
+	
+	def matching_passage(self, tile_pos: Vector2Int) -> list:
+		matches = [pair for pair in self.passages if pair[0] == tile_pos]
+		return matches[0][1:]
 
 class Player:
 	"""A simple player object that can move around the map.
@@ -153,19 +172,22 @@ class Player:
 		to the top-left corner. (0, 0)
 		area: The coordinates of the current area in the world map
 		relative to the top-left corner. (0, 0)
+		inventory: A list containing all the items the player has.
 	"""
 
 	def __init__(self, pos: Vector2Int, area_pos: Vector2Int) -> None:
-		"""Initializes the instance with a position and current area.
+		"""Initializes the instance with a position, current area,
+		and inventory.
 
 		Args:
-			pos: The coordinates of the player in the current area relative
-			to the top-left corner. (0, 0)
+			pos: The coordinates of the player in the current area
+			relative to the top-left corner. (0, 0)
 			area: The coordinates of the current area in the world map
 			relative to the top-left corner. (0, 0)
 		"""
 		self.pos = pos
 		self.area_pos = area_pos
+		self.inventory = []
 
 	def move(self, direction: Direction, area: Area) -> None:
 		"""Try to move the player in a specified direction.
@@ -196,6 +218,9 @@ class Player:
 			case "item":
 				pass # TODO: create a function to pick up items
 			case _: self.pos = new_pos
+	
+	def change_room(self, new_area_pos: Vector2Int) -> None:
+
 
 class Item:
 	def __init__(self,
@@ -217,3 +242,40 @@ class Item:
 	def use(self) -> None:
 		self.func()
 		self.increment_count(-1)
+
+class File:
+	def __init__(self) -> None:
+		self.world = []
+		self.player = Player(Vector2Int.zero(), Vector2Int.zero())
+	
+	def load_files(self) -> None:
+		self.load_world()
+		self.load_player()
+
+	def load_world(self) -> None:
+		with open(SAVE_FILE_PATHS["world"], "r") as file:
+			self.world = pickle.load(file)
+
+	def load_player(self) -> None:
+		with open(SAVE_FILE_PATHS["player"], "r") as file:
+			self.player = pickle.load(file)
+	
+	def save_files(self) -> None:
+		self.save_world()
+		self.save_player()
+	
+	def save_world(self) -> None:
+		with open(SAVE_FILE_PATHS["world"], "w") as file:
+			pickle.dump(self.world, file)
+	
+	def save_player(self) -> None:
+		with open(SAVE_FILE_PATHS["player"], "w") as file:
+			pickle.dump(self.player, file)
+
+# Functions
+def main() -> None:
+	save_file = File()
+	save_file.load_files() # TODO: make a title screen
+
+
+if __name__ == "__main__": main()
