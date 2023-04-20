@@ -8,12 +8,12 @@ import shelve
 
 APP_ROOT = Path(".")
 SAVE_FILE_PATHS = {
-	"world": APP_ROOT / "SaveFile" / "world.pkl",
-	"player": APP_ROOT / "SaveFile" / "player.pkl"
+	"world": APP_ROOT / "SaveFile" / "world",
+	"player": APP_ROOT / "SaveFile" / "player"
 }
 DEFAULT_FILE_PATHS = {
-	"world": APP_ROOT / "DefaultSaveData" / "world.pkl",
-	"player": APP_ROOT / "DefaultSaveData" / "player.pkl"
+	"world": APP_ROOT / "DefaultSaveData" / "world.bin",
+	"player": APP_ROOT / "DefaultSaveData" / "player.bin"
 }
 
 import logging
@@ -556,42 +556,28 @@ class File:
 	def load_files(self) -> None:
 		"""Loads data from the appropriate directory into this
 		instance"""
-		self.load_world()
-		self.load_player()
+		self.load_file("world")
+		self.load_file("player")
 
-	def load_world(self) -> None:
-		if SAVE_FILE_PATHS["world"].is_file():
-			read_location = SAVE_FILE_PATHS["world"]
+	def load_file(self, name: str) -> None:
+		if SAVE_FILE_PATHS[name].is_file():
+			read_location = str(SAVE_FILE_PATHS[name])
 		else:
-			read_location = DEFAULT_FILE_PATHS["world"]
-		
-		shelf = shelve.open(read_location)
-		self.world = shelf["world"]
-		shelf.close()
+			read_location = str(DEFAULT_FILE_PATHS[name])
 
-	def load_player(self) -> None:
-		if SAVE_FILE_PATHS["player"].is_file():
-			read_location = SAVE_FILE_PATHS["player"]
-		else:
-			read_location = DEFAULT_FILE_PATHS["player"]
-		
 		shelf = shelve.open(read_location)
-		self.player = shelf["player"]
+		if name == "world": self.world = shelf[name]
+		elif name == "player": self.player = shelf[name]
 		shelf.close()
 
 	def save_files(self) -> None:
 		"""Saves data from this instance to the SaveFile directory"""
-		self.save_world()
-		self.save_player()
+		self.save_file("world")
+		self.save_file("player")
 
-	def save_world(self) -> None:
-		shelf = shelve.open(SAVE_FILE_PATHS["world"])
-		shelf["world"] = self.world
-		shelf.close()
-
-	def save_player(self) -> None:
-		shelf = shelve.open(SAVE_FILE_PATHS["player"])
-		shelf["world"] = self.player
+	def save_file(self, name: str) -> None:
+		shelf = shelve.open(str(SAVE_FILE_PATHS[name]))
+		shelf[name] = self.__getattribute__(name)
 		shelf.close()
 
 # Functions
@@ -632,9 +618,9 @@ def main() -> None:
 	save_file = File()
 	title_screen()
 	cls()
-	save_file.load_files()
+	# save_file.load_files()
 	print("You entered the game loop") # game loop
-	save_file.world[0].create_from_str("""
+	save_file.world.append(Area.create_from_str("""
  WWWWWWWWW
 WW WW    W
 W  WW    W
@@ -643,9 +629,9 @@ W        W
 W        W
 W        W
 WW    WWWW
- WW  WW   
-  W^^W    
-""")
+ WW  WW
+  W^^W
+"""))
 	save_file.save_files()
 
 if __name__ == "__main__": main()
