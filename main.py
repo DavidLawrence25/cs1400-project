@@ -2,6 +2,8 @@
 ## Built-In
 from enum import Enum, auto
 from pathlib import Path
+from os import system
+from os import name as os_name
 import pickle
 
 APP_ROOT = Path(".")
@@ -105,11 +107,53 @@ class Vector2Int:
 
 ## Enums
 class Direction(Enum):
-	"""A cardinal direction... that's it."""
+	"""A cardinal direction
+
+	Attributes:
+		NORTH
+
+		SOUTH
+
+		EAST
+
+		WEST
+	"""
 	NORTH = auto()
 	SOUTH = auto()
 	EAST = auto()
 	WEST = auto()
+
+class UserInput(Enum):
+	"""A code derived from user input to call the correct function
+
+	Attributes:
+		MOVE: Move in a given direction
+
+		ITEM_USE: Use an item
+
+		ITEM_INFO: Display info about an item
+
+		INV_VIEW: Display the inventory
+
+		HINT: Give the player a hint about what to do next
+
+		CMD_LIST: List all possible commands
+
+		SAVE: Save the file
+
+		LOAD: Load the file
+
+		QUIT: Quit the game
+	"""
+	MOVE = auto()
+	ITEM_USE = auto()
+	ITEM_INFO = auto()
+	INV_VIEW = auto()
+	HINT = auto()
+	CMD_LIST = auto()
+	SAVE = auto()
+	LOAD = auto()
+	QUIT = auto()
 
 ## Log Events
 class CustomLogEvent:
@@ -177,6 +221,13 @@ class UnexpectedTileChar(CustomLogEvent):
 						"UnexpectedTileChar",
 						"Area could not be created from string")
 
+class InvalidUserInput(CustomLogEvent):
+	"""The user did not give a valid input"""
+	def __init__(self):
+		super().__init__(logging.WARNING,
+						"InvalidUserInput",
+						"Command was not recognized")
+
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -229,6 +280,10 @@ class Area:
 
 		size: The dimensions of the area measured in tiles
 
+		tiles: A 2D array of tiles
+
+		passages: A tuple of passage-passage-area tuples
+
 	Methods:
 		matching_passage(tile_pos): Returns the matching passage in
 		another area for a given tile in this area
@@ -236,6 +291,18 @@ class Area:
 		create_from_str(string): Returns a new area created from a
 		string (this is a temporary method)
 	"""
+
+	CHARSET = {
+		"air": " ",
+		"player": "☻",
+		"item": "✱",
+		"wall": "█",
+		"passageL": "⇇",
+		"passageR": "⇉",
+		"passageU": "⇈",
+		"passageD": "⇊"
+	}
+
 	def __init__(self, name: str, pos: Vector2Int, size: Vector2Int) -> None:
 		"""Creates an area object filled with air tiles
 
@@ -261,6 +328,9 @@ class Area:
 		"""
 		matches = [pair for pair in self.passages if pair[0] == tile_pos]
 		return matches[0][1:]
+
+	def get_str(self) -> str:
+		return "" # TODO: convert the area to a printable string
 
 	@staticmethod
 	def create_from_str(string: str):
@@ -503,8 +573,44 @@ class File:
 			pickle.dump(self.player, file)
 
 # Functions
+def cls():
+	"""Clears the terminal"""
+	system("cls" if os_name == "nt" else "clear")
+
+def title_screen():
+	"""Display the title screen and get the appropriate input
+
+	Raises:
+		InvalidUserInput: The user did not give a valid input
+	"""
+	DISPLAY_TEXT = r"""
+ _                   _              _   _____
+| |                 | |            | | |_   _|
+| |      ___    ___ | | __ ___   __| |   | |  _ __
+| |     / _ \  / __|| |/ // _ \ / _` |   | | | '_ \
+| |____| (_) || (__ |   <|  __/| (_| |  _| |_| | | |
+\_____/ \___/  \___||_|\_\\___| \__,_|  \___/|_| |_|
+         A Text Adventure by David Lawrence
+
+                   p > Play Game
+                   q > Quit
+	"""
+	while True:
+		print(DISPLAY_TEXT)
+		raw_input = input("> ")
+		if raw_input == "q": exit()
+		elif raw_input == "p": return
+
+		cls()
+		InvalidUserInput()
+
+def get_input(): pass
+
 def main() -> None:
 	save_file = File()
-	save_file.load_files() # TODO: make a title screen
+	title_screen()
+	cls()
+	save_file.load_files()
+	print("You entered the game loop") # game loop
 
 if __name__ == "__main__": main()
