@@ -27,17 +27,30 @@ class Vector2Int:
 
 	Attributes:
 		x: An integer describing the horizontal component of the vector
+
 		y: An integer describing the vertical component of the vector
+
+	Methods:
+		zero(): Returns (0, 0)
+
+		up(): Returns (0, 1)
+
+		down(): Returns (0, -1)
+
+		left(): Returns (-1, 0)
+
+		right(): Returns (1, 0)
 	"""
 
 	def __init__(self, x: int, y: int) -> None:
 		"""Initializes the instance with x and y components.
 
 		Args:
-			x: An integer describing the horizontal
-			component of the vector
-			y: An integer describing the vertical
-			component of the vector
+			x: An integer describing the horizontal component of the
+			vector
+
+			y: An integer describing the vertical component of the
+			vector
 		"""
 		self.__x = x
 		self.__y = y
@@ -92,6 +105,7 @@ class Vector2Int:
 
 ## Enums
 class Direction(Enum):
+	"""A cardinal direction... that's it."""
 	NORTH = auto()
 	SOUTH = auto()
 	EAST = auto()
@@ -99,10 +113,28 @@ class Direction(Enum):
 
 ## Log Events
 class CustomLogEvent:
+	"""A base class for calling log events via the logging module.
+
+	Attributes:
+		level: The severity level for this event
+
+		event_type: The name of the event
+
+		event_msg: What the message should be for this event
+	"""
 	def __init__(self,
 				level = logging.INFO,
 				event_type = "UnknownEvent",
 				event_msg = "An unknown event has occured.") -> None:
+		"""Initializes and calls the event
+
+		Args:
+			level: The severity level for this event
+
+			event_type: The name of the event
+
+			event_msg: What the message should be for this event
+		"""
 		self.level = level
 		self.event_type = event_type
 		self.event_msg = event_msg
@@ -118,19 +150,54 @@ class CustomLogEvent:
 				exit()
 
 class HitWall(CustomLogEvent):
+	"""The player hit a wall whilst trying to move"""
 	def __init__(self):
 		super().__init__(logging.INFO,
 						"HitWall",
 						"A wall blocks your path.")
 
 class InvalidDirection(CustomLogEvent):
+	"""The player somehow moved in a non-cardinal direction"""
 	def __init__(self):
 		super().__init__(logging.ERROR,
 						"InvalidDirection",
 						"An invalid direction was passed into Player.move().")
 
+class UnassignedVariable(CustomLogEvent):
+	"""The code somehow failed to assign a value to a variable"""
+	def __init__(self):
+		super().__init__(logging.ERROR,
+						"UnassignedVariable",
+						"The code didn't assign a value to a variable.")
+
+class UnexpectedTileChar(CustomLogEvent):
+	"""There was an unexpected tile character in the area string"""
+	def __init__(self):
+		super().__init__(logging.ERROR,
+						"UnexpectedTileChar",
+						"Area could not be created from string")
+
 ## Main
 class Tile:
+	"""A basic tile meant to be stored inside an Area's tiles array
+
+	Attributes:
+		name: The name of the tile's type (item, wall, passage, etc.)
+
+		id: A specific identifier used for special tiles like items
+
+		direction: The direction a passage is pointing in
+
+	Methods:
+		air(): Returns an air tile
+
+		item(id): Returns an item tile with the specified ID
+
+		wall(): Returns a wall tile
+
+		passage(direction): Returns a passage pointing in the specified
+		direction
+	"""
 	def __init__(self,
 				name: str = "",
 				id: str = "",
@@ -153,51 +220,145 @@ class Tile:
 		return Tile("passage", direction = direction)
 
 class Area:
+	"""A detailed 2D array of tiles
+
+	Attributes:
+		name: The name of the area
+
+		pos: The position of the area in the map
+
+		size: The dimensions of the area measured in tiles
+
+	Methods:
+		matching_passage(tile_pos): Returns the matching passage in
+		another area for a given tile in this area
+
+		create_from_str(string): Returns a new area created from a
+		string (this is a temporary method)
+	"""
 	def __init__(self, name: str, pos: Vector2Int, size: Vector2Int) -> None:
+		"""Creates an area object filled with air tiles
+
+		Args:
+			name: The name of the area
+
+			pos: The position of the area in the map
+
+			size: The dimensions of the area measured in tiles
+		"""
 		self.name = name
 		self.pos = pos
 		self.size = size
 		self.tiles = [[Tile.air() for _ in range(size.x)] * size.y]
 		self.passages = tuple() # ((passage_a, passage_b, that_area))
-	
+
 	def matching_passage(self, tile_pos: Vector2Int) -> list:
+		"""Returns the matching passage in another area for a given tile
+		in this area
+
+		Args:
+			tile_pos: The position of the passage in this area
+		"""
 		matches = [pair for pair in self.passages if pair[0] == tile_pos]
 		return matches[0][1:]
 
+	@staticmethod
+	def create_from_str(string: str):
+		"""Returns a new area created from a string (this is a temporary
+		method)
+
+		Args:
+			string: The string to read data from
+
+		Raises:
+			UnassignedVariable: The code somehow failed to assign a
+			value to a variable
+
+			UnexpectedTileChar: There was an unexpected tile character
+			in the area string
+		"""
+		lines = string.splitlines()
+		size = Vector2Int(len(lines[0]), len(lines))
+		name = input("Enter name > ")
+		is_pos_valid = False
+		pos = None
+		while not is_pos_valid:
+			pos_raw = input("Enter coordinates > ")
+			pos_raw = pos_raw.replace(" ", "")
+			pos_raw = pos_raw.split(",")
+			if len(pos_raw) == 2:
+				pos = Vector2Int(int(pos_raw[0]), int(pos_raw[1]))
+				is_pos_valid = True
+		if pos is None: UnassignedVariable()
+		else:
+			result = Area(name, pos, size)
+			for y, line in enumerate(lines):
+				for x, tile in enumerate(line):
+					if tile == " ":
+						result.tiles[y][x] = Tile.air()
+					elif tile == "I":
+						id = input("Enter item id > ")
+						result.tiles[y][x] = Tile.item(id)
+					elif tile == "W":
+						result.tiles[y][x] = Tile.wall()
+					elif tile == "<":
+						result.tiles[y][x] = Tile.passage(Direction.WEST)
+					elif tile == "^":
+						result.tiles[y][x] = Tile.passage(Direction.NORTH)
+					elif tile == "v":
+						result.tiles[y][x] = Tile.passage(Direction.SOUTH)
+					elif tile == ">":
+						result.tiles[y][x] = Tile.passage(Direction.EAST)
+					else:
+						UnexpectedTileChar()
+
+			return result
+
 class Player:
-	"""A simple player object that can move around the map.
+	"""A simple player object that can move around the map
 
 	Attributes:
 		pos: The coordinates of the player in the current area relative
-		to the top-left corner. (0, 0)
+		to the top-left corner (0, 0)
+
 		area: The coordinates of the current area in the world map
-		relative to the top-left corner. (0, 0)
-		inventory: A list containing all the items the player has.
+		relative to the top-left corner (0, 0)
+
+		inventory: A list containing all the items the player has
+
+	Methods:
+		move(direction, area): Try to move the player in a specified
+		direction
+
+		change_room(new_area_pos): ???
 	"""
 
 	def __init__(self, pos: Vector2Int, area_pos: Vector2Int) -> None:
 		"""Initializes the instance with a position, current area,
-		and inventory.
+		and inventory
 
 		Args:
 			pos: The coordinates of the player in the current area
-			relative to the top-left corner. (0, 0)
+			relative to the top-left corner (0, 0)
+
 			area: The coordinates of the current area in the world map
-			relative to the top-left corner. (0, 0)
+			relative to the top-left corner (0, 0)
 		"""
 		self.pos = pos
 		self.area_pos = area_pos
 		self.inventory = []
 
 	def move(self, direction: Direction, area: Area) -> None:
-		"""Try to move the player in a specified direction.
+		"""Try to move the player in a specified direction
 
 		Args:
 			direction: The direction the player tries to move in
+
 			area: The area the player is currently in
 
 		Raises:
 			InvalidDirection: direction wasn't in the Direction enum
+
 			HitWall: The tile the player tried to walk into was a wall
 		"""
 		match direction:
@@ -218,17 +379,52 @@ class Player:
 			case "item":
 				pass # TODO: create a function to pick up items
 			case _: self.pos = new_pos
-	
-	def change_room(self, new_area_pos: Vector2Int) -> None:
 
+	def change_room(self, new_area_pos: Vector2Int) -> None:
+		pass
 
 class Item:
+	"""An item inside the player's inventory
+
+	Attributes:
+		display_name: The name the player will see
+
+		id: The unique item ID used to identify this item
+
+		consumable: Determines whether or not this item's count will go
+		down when used
+
+		func: The function to call when used
+
+		count: How many copies of the item the player has
+
+	Methods:
+		increment_count(step): Adds a set amount to the count, deleting
+		the item instance if it drops below 1
+
+		use(): Call func and decrement count if the item is consumable
+	"""
+
 	def __init__(self,
 				display_name: str,
 				id: str,
 				consumable: bool,
 				func,
 				count: int = 1) -> None:
+		"""Creates an item, but doesn't put it in the player's inventory
+
+		Args:
+			display_name: The name the player will see
+
+			id: The unique item ID used to identify this item
+
+			consumable: Determines whether or not this item's count will
+			go down when used
+
+			func: The function to call when used
+
+			count: How many copies of the item the player has
+		"""
 		self.display_name = display_name
 		self.id = id
 		self.consumable = consumable
@@ -236,46 +432,79 @@ class Item:
 		self.count = count
 
 	def increment_count(self, step: int = 1) -> None:
+		"""Adds a set amount to the count, deleting the item instance if
+		it drops below 1
+
+		Args:
+			step: The amount to increment the count by
+		"""
 		self.count += step
-		if self.count == 0: del self
+		if self.count < 1: del self
 
 	def use(self) -> None:
+		"""Call func and decrement count if the item is consumable"""
 		self.func()
-		self.increment_count(-1)
+		if self.consumable: self.increment_count(-1)
 
 class File:
+	"""A save file pulled from the SaveFile directory
+
+	Attributes:
+		world: A 2D array of areas
+
+		player: An instance of the Player class
+
+	Methods:
+		load_files(): Loads data from the appropriate directory into
+		this instance
+
+		save_files(): Saves data from this instance to the SaveFile
+		directory
+	"""
+
 	def __init__(self) -> None:
+		"""Instantiates an empty file object"""
 		self.world = []
 		self.player = Player(Vector2Int.zero(), Vector2Int.zero())
-	
+
 	def load_files(self) -> None:
+		"""Loads data from the appropriate directory into this
+		instance"""
 		self.load_world()
 		self.load_player()
 
 	def load_world(self) -> None:
-		with open(SAVE_FILE_PATHS["world"], "r") as file:
+		if SAVE_FILE_PATHS["world"].is_file():
+			read_location = SAVE_FILE_PATHS["world"]
+		else:
+			read_location = DEFAULT_FILE_PATHS["world"]
+		with open(read_location, "rb") as file:
 			self.world = pickle.load(file)
 
 	def load_player(self) -> None:
-		with open(SAVE_FILE_PATHS["player"], "r") as file:
+		if SAVE_FILE_PATHS["player"].is_file():
+			read_location = SAVE_FILE_PATHS["player"]
+		else:
+			read_location = DEFAULT_FILE_PATHS["player"]
+		with open(read_location, "rb") as file:
 			self.player = pickle.load(file)
-	
+
 	def save_files(self) -> None:
+		"""Saves data from this instance to the SaveFile directory"""
 		self.save_world()
 		self.save_player()
-	
+
 	def save_world(self) -> None:
-		with open(SAVE_FILE_PATHS["world"], "w") as file:
+		with open(SAVE_FILE_PATHS["world"], "wb") as file:
 			pickle.dump(self.world, file)
-	
+
 	def save_player(self) -> None:
-		with open(SAVE_FILE_PATHS["player"], "w") as file:
+		with open(SAVE_FILE_PATHS["player"], "wb") as file:
 			pickle.dump(self.player, file)
 
 # Functions
 def main() -> None:
 	save_file = File()
 	save_file.load_files() # TODO: make a title screen
-
 
 if __name__ == "__main__": main()
