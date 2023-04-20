@@ -4,7 +4,7 @@ from enum import Enum, auto
 from pathlib import Path
 from os import system
 from os import name as os_name
-import pickle
+import shelve
 
 APP_ROOT = Path(".")
 SAVE_FILE_PATHS = {
@@ -63,7 +63,7 @@ class Vector2Int:
 	@x.setter
 	def x(self, new_x: int) -> None:
 		if type(new_x) is int: self.__x = new_x
-		else: pass #! ERROR
+		else: raise TypeError
 
 	@property
 	def y(self) -> int: return self.__y
@@ -71,7 +71,7 @@ class Vector2Int:
 	@y.setter
 	def y(self, new_y: int | float) -> None:
 		if type(new_y) is int: self.__y = new_y
-		else: pass #! ERROR
+		else: raise TypeError
 
 	def __eq__(self, vector) -> bool:
 		return self.__x == vector.x and self.__y == vector.y
@@ -316,7 +316,7 @@ class Area:
 		self.name = name
 		self.pos = pos
 		self.size = size
-		self.tiles = [[Tile.air() for _ in range(size.x)] * size.y]
+		self.tiles = []
 		self.passages = tuple() # ((passage_a, passage_b, that_area))
 
 	def matching_passage(self, tile_pos: Vector2Int) -> list:
@@ -330,7 +330,22 @@ class Area:
 		return matches[0][1:]
 
 	def get_str(self) -> str:
-		return "" # TODO: convert the area to a printable string
+		output = ""
+		for row in self.tiles:
+			for tile in row:
+				if tile.name == "passage":
+					if tile.direction == Direction.NORTH:
+						output += Area.CHARSET["passageU"]
+					elif tile.direction == Direction.SOUTH:
+						output += Area.CHARSET["passageD"]
+					elif tile.direction == Direction.EAST:
+						output += Area.CHARSET["passageR"]
+					else: # west
+						output += Area.CHARSET["passageL"]
+				else:
+					output += Area.CHARSET[tile.name]
+			output += "\n"
+		return output
 
 	@staticmethod
 	def create_from_str(string: str):
@@ -363,22 +378,23 @@ class Area:
 		else:
 			result = Area(name, pos, size)
 			for y, line in enumerate(lines):
+				result.tiles.append([])
 				for x, tile in enumerate(line):
 					if tile == " ":
-						result.tiles[y][x] = Tile.air()
+						result.tiles[y].append(Tile.air())
 					elif tile == "I":
 						id = input("Enter item id > ")
-						result.tiles[y][x] = Tile.item(id)
+						result.tiles[y].append(Tile.item(id))
 					elif tile == "W":
-						result.tiles[y][x] = Tile.wall()
-					elif tile == "<":
-						result.tiles[y][x] = Tile.passage(Direction.WEST)
+						result.tiles[y].append(Tile.wall())
 					elif tile == "^":
-						result.tiles[y][x] = Tile.passage(Direction.NORTH)
+						result.tiles[y].append(Tile.passage(Direction.NORTH))
 					elif tile == "v":
-						result.tiles[y][x] = Tile.passage(Direction.SOUTH)
+						result.tiles[y].append(Tile.passage(Direction.SOUTH))
 					elif tile == ">":
-						result.tiles[y][x] = Tile.passage(Direction.EAST)
+						result.tiles[y].append(Tile.passage(Direction.EAST))
+					elif tile == "<":
+						result.tiles[y].append(Tile.passage(Direction.WEST))
 					else:
 						UnexpectedTileChar()
 
@@ -548,16 +564,20 @@ class File:
 			read_location = SAVE_FILE_PATHS["world"]
 		else:
 			read_location = DEFAULT_FILE_PATHS["world"]
-		with open(read_location, "rb") as file:
-			self.world = pickle.load(file)
+		
+		shelf = shelve.open(read_location)
+		self.world = shelf["world"]
+		shelf.close()
 
 	def load_player(self) -> None:
 		if SAVE_FILE_PATHS["player"].is_file():
 			read_location = SAVE_FILE_PATHS["player"]
 		else:
 			read_location = DEFAULT_FILE_PATHS["player"]
-		with open(read_location, "rb") as file:
-			self.player = pickle.load(file)
+		
+		shelf = shelve.open(read_location)
+		self.player = shelf["player"]
+		shelf.close()
 
 	def save_files(self) -> None:
 		"""Saves data from this instance to the SaveFile directory"""
@@ -565,12 +585,14 @@ class File:
 		self.save_player()
 
 	def save_world(self) -> None:
-		with open(SAVE_FILE_PATHS["world"], "wb") as file:
-			pickle.dump(self.world, file)
+		shelf = shelve.open(SAVE_FILE_PATHS["world"])
+		shelf["world"] = self.world
+		shelf.close()
 
 	def save_player(self) -> None:
-		with open(SAVE_FILE_PATHS["player"], "wb") as file:
-			pickle.dump(self.player, file)
+		shelf = shelve.open(SAVE_FILE_PATHS["player"])
+		shelf["world"] = self.player
+		shelf.close()
 
 # Functions
 def cls():
@@ -612,5 +634,18 @@ def main() -> None:
 	cls()
 	save_file.load_files()
 	print("You entered the game loop") # game loop
+	save_file.world[0].create_from_str("""
+ WWWWWWWWW
+WW WW    W
+W  WW    W
+W  WW    <
+W        W
+W        W
+W        W
+WW    WWWW
+ WW  WW   
+  W^^W    
+""")
+	save_file.save_files()
 
 if __name__ == "__main__": main()
