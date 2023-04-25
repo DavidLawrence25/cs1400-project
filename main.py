@@ -610,6 +610,18 @@ class File:
 		with open(str(SAVE_FILE_PATHS[name]), "wb") as file:
 			pickle.dump(self.__getattribute__(name), file)
 
+# Misc Constants
+AREA_POS_TO_INDEX = {
+	Vector2Int(0, 0): 0,
+	Vector2Int(1, 0): 1,
+	Vector2Int(2, 0): 2,
+	Vector2Int(3, 0): 3,
+	Vector2Int(0, -1): 4,
+	Vector2Int(1, -1): 5,
+	Vector2Int(2, -1): 6,
+	Vector2Int(3, -1): 7
+}
+
 # Functions
 def cls():
 	"""Clears the terminal"""
@@ -642,7 +654,57 @@ def title_screen():
 		cls()
 		InvalidUserInput()
 
-def get_input(): pass
+def get_input() -> tuple:
+	raw_input = input("> ")
+	cmd = raw_input.split(" ")[0]
+	args = raw_input.split(" ")[1:]
+	match cmd:
+		case "w": return (UserInput.MOVE, Direction.NORTH)
+		case "s": return (UserInput.MOVE, Direction.SOUTH)
+		case "a": return (UserInput.MOVE, Direction.WEST)
+		case "d": return (UserInput.MOVE, Direction.EAST)
+		case "move":
+			match args[0]:
+				case "north" | "n": return (UserInput.MOVE, Direction.NORTH)
+				case "south" | "s": return (UserInput.MOVE, Direction.SOUTH)
+				case "east" | "e": return (UserInput.MOVE, Direction.EAST)
+				case "west" | "w": return (UserInput.MOVE, Direction.WEST)
+		case "use": return (UserInput.ITEM_USE, *args)
+		case "info":return (UserInput.ITEM_INFO, *args)
+		case "inv": return (UserInput.INV_VIEW,)
+		case "help": return (UserInput.CMD_LIST,)
+		case "?": return (UserInput.HINT,)
+		case "file":
+			match args[0]:
+				case "save" | "s": return (UserInput.SAVE,)
+				case "load" | "l": return (UserInput.LOAD,)
+				case "quit" | "q": return (UserInput.QUIT,)
+
+	InvalidUserInput()
+	return ()
+
+def call_func_from_input(user_input: tuple, file: File) -> None:
+	match user_input[0]:
+		case UserInput.MOVE:
+			file.player.move(user_input[1],
+				file.world[AREA_POS_TO_INDEX[file.player.area_pos]]
+			)
+		case UserInput.ITEM_USE:
+			pass
+		case UserInput.ITEM_INFO:
+			pass
+		case UserInput.INV_VIEW:
+			pass
+		case UserInput.CMD_LIST:
+			pass
+		case UserInput.HINT:
+			pass
+		case UserInput.SAVE:
+			pass
+		case UserInput.LOAD:
+			pass
+		case UserInput.QUIT:
+			pass
 
 def main() -> None:
 	save_file = File()
@@ -652,5 +714,6 @@ def main() -> None:
 	save_file.player.pos = Vector2Int(2, 2)
 	save_file.save_files()
 	print(save_file.world[0].get_str(save_file.player.pos))
+	print(get_input())
 
 if __name__ == "__main__": main()
