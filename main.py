@@ -4,16 +4,16 @@ from enum import Enum, auto
 from pathlib import Path
 from os import system
 from os import name as os_name
-import shelve
+import pickle
 
 APP_ROOT = Path(".")
 SAVE_FILE_PATHS = {
-	"world": APP_ROOT / "SaveFile" / "world",
-	"player": APP_ROOT / "SaveFile" / "player"
+	"world": APP_ROOT / "SaveFile" / "world.pkl",
+	"player": APP_ROOT / "SaveFile" / "player.pkl"
 }
 DEFAULT_FILE_PATHS = {
-	"world": APP_ROOT / "DefaultSaveData" / "world.bin",
-	"player": APP_ROOT / "DefaultSaveData" / "player.bin"
+	"world": APP_ROOT / "DefaultSaveData" / "world.pkl",
+	"player": APP_ROOT / "DefaultSaveData" / "player.pkl"
 }
 
 import logging
@@ -74,7 +74,10 @@ class Vector2Int:
 		else: raise TypeError
 
 	def __eq__(self, vector) -> bool:
-		return self.__x == vector.x and self.__y == vector.y
+		if self.__x == vector.x and self.__y == vector.y:
+			return True
+		else:
+			return False
 
 	def __add__(self, vector):
 		return Vector2Int(self.__x + vector.x, self.__y + vector.y)
@@ -90,6 +93,9 @@ class Vector2Int:
 		self = self - vector
 		return self
 
+	def __str__(self) -> str:
+		return f"<{self.x}, {self.y}>"
+
 	@staticmethod
 	def zero(): return Vector2Int(0, 0)
 
@@ -104,6 +110,19 @@ class Vector2Int:
 
 	@staticmethod
 	def right(): return Vector2Int(1, 0)
+
+	@staticmethod
+	def get_from_user():
+		is_valid = False
+		vector = Vector2Int.zero()
+		while not is_valid:
+			vector_raw = input("Enter Vector2Int > ")
+			vector_raw = vector_raw.replace(" ", "")
+			vector_raw = vector_raw.split(",")
+			if len(vector_raw) == 2:
+				vector = Vector2Int(int(vector_raw[0]), int(vector_raw[1]))
+				is_valid = True
+		return vector
 
 ## Enums
 class Direction(Enum):
@@ -282,7 +301,7 @@ class Area:
 
 		tiles: A 2D array of tiles
 
-		passages: A tuple of passage-passage-area tuples
+		passages: A list of passage-passage-area tuples
 
 	Methods:
 		matching_passage(tile_pos): Returns the matching passage in
@@ -293,14 +312,14 @@ class Area:
 	"""
 
 	CHARSET = {
-		"air": " ",
-		"player": "☻",
-		"item": "✱",
-		"wall": "█",
-		"passageL": "⇇",
-		"passageR": "⇉",
-		"passageU": "⇈",
-		"passageD": "⇊"
+		"air": "  ",
+		"player": ":)",
+		"item": "()",
+		"wall": "██",
+		"passageL": "🡀🡀",
+		"passageR": "🡂🡂",
+		"passageU": "⬆⬆",
+		"passageD": "⬇⬇"
 	}
 
 	def __init__(self, name: str, pos: Vector2Int, size: Vector2Int) -> None:
@@ -317,7 +336,7 @@ class Area:
 		self.pos = pos
 		self.size = size
 		self.tiles = []
-		self.passages = tuple() # ((passage_a, passage_b, that_area))
+		self.passages = [] # [(passage_a, passage_b, that_area)]
 
 	def matching_passage(self, tile_pos: Vector2Int) -> list:
 		"""Returns the matching passage in another area for a given tile
@@ -329,11 +348,13 @@ class Area:
 		matches = [pair for pair in self.passages if pair[0] == tile_pos]
 		return matches[0][1:]
 
-	def get_str(self) -> str:
+	def get_str(self, player_pos: Vector2Int) -> str:
 		output = ""
-		for row in self.tiles:
-			for tile in row:
-				if tile.name == "passage":
+		for y, row in enumerate(self.tiles):
+			for x, tile in enumerate(row):
+				if Vector2Int(x, y) == player_pos:
+					output += Area.CHARSET["player"]
+				elif tile.name == "passage":
 					if tile.direction == Direction.NORTH:
 						output += Area.CHARSET["passageU"]
 					elif tile.direction == Direction.SOUTH:
@@ -346,6 +367,15 @@ class Area:
 					output += Area.CHARSET[tile.name]
 			output += "\n"
 		return output
+
+	@staticmethod
+	def generate_passage_pair(tile_pos_0: Vector2Int) -> tuple:
+		print(f"Passage detected at {tile_pos_0}")
+		print("Please provide the position of the matching passage")
+		tile_pos_1 = Vector2Int.get_from_user()
+		print("Please provide the position of the area this passage maps to")
+		area_pos = Vector2Int.get_from_user()
+		return (tile_pos_0, tile_pos_1, area_pos)
 
 	@staticmethod
 	def create_from_str(string: str):
@@ -365,40 +395,42 @@ class Area:
 		lines = string.splitlines()
 		size = Vector2Int(len(lines[0]), len(lines))
 		name = input("Enter name > ")
-		is_pos_valid = False
-		pos = None
-		while not is_pos_valid:
-			pos_raw = input("Enter coordinates > ")
-			pos_raw = pos_raw.replace(" ", "")
-			pos_raw = pos_raw.split(",")
-			if len(pos_raw) == 2:
-				pos = Vector2Int(int(pos_raw[0]), int(pos_raw[1]))
-				is_pos_valid = True
-		if pos is None: UnassignedVariable()
-		else:
-			result = Area(name, pos, size)
-			for y, line in enumerate(lines):
-				result.tiles.append([])
-				for x, tile in enumerate(line):
-					if tile == " ":
-						result.tiles[y].append(Tile.air())
-					elif tile == "I":
-						id = input("Enter item id > ")
-						result.tiles[y].append(Tile.item(id))
-					elif tile == "W":
-						result.tiles[y].append(Tile.wall())
-					elif tile == "^":
-						result.tiles[y].append(Tile.passage(Direction.NORTH))
-					elif tile == "v":
-						result.tiles[y].append(Tile.passage(Direction.SOUTH))
-					elif tile == ">":
-						result.tiles[y].append(Tile.passage(Direction.EAST))
-					elif tile == "<":
-						result.tiles[y].append(Tile.passage(Direction.WEST))
-					else:
-						UnexpectedTileChar()
+		pos = Vector2Int.get_from_user()
+		result = Area(name, pos, size)
+		for y, line in enumerate(lines):
+			result.tiles.append([])
+			for x, tile in enumerate(line):
+				if tile == " ":
+					result.tiles[y].append(Tile.air())
+				elif tile == "I":
+					id = input("Enter item id > ")
+					result.tiles[y].append(Tile.item(id))
+				elif tile == "W":
+					result.tiles[y].append(Tile.wall())
+				elif tile == "^":
+					result.tiles[y].append(Tile.passage(Direction.NORTH))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
+				elif tile == "v":
+					result.tiles[y].append(Tile.passage(Direction.SOUTH))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
+				elif tile == ">":
+					result.tiles[y].append(Tile.passage(Direction.EAST))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
+				elif tile == "<":
+					result.tiles[y].append(Tile.passage(Direction.WEST))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
+				else:
+					UnexpectedTileChar()
 
-			return result
+		return result
 
 class Player:
 	"""A simple player object that can move around the map
@@ -565,10 +597,9 @@ class File:
 		else:
 			read_location = str(DEFAULT_FILE_PATHS[name])
 
-		shelf = shelve.open(read_location)
-		if name == "world": self.world = shelf[name]
-		elif name == "player": self.player = shelf[name]
-		shelf.close()
+		with open(read_location, "rb") as file:
+			if name == "world": self.world = pickle.load(file)
+			elif name == "player": self.player = pickle.load(file)
 
 	def save_files(self) -> None:
 		"""Saves data from this instance to the SaveFile directory"""
@@ -576,9 +607,8 @@ class File:
 		self.save_file("player")
 
 	def save_file(self, name: str) -> None:
-		shelf = shelve.open(str(SAVE_FILE_PATHS[name]))
-		shelf[name] = self.__getattribute__(name)
-		shelf.close()
+		with open(str(SAVE_FILE_PATHS[name]), "wb") as file:
+			pickle.dump(self.__getattribute__(name), file)
 
 # Functions
 def cls():
@@ -618,20 +648,9 @@ def main() -> None:
 	save_file = File()
 	title_screen()
 	cls()
-	# save_file.load_files()
-	print("You entered the game loop") # game loop
-	save_file.world.append(Area.create_from_str("""
- WWWWWWWWW
-WW WW    W
-W  WW    W
-W  WW    <
-W        W
-W        W
-W        W
-WW    WWWW
- WW  WW
-  W^^W
-"""))
+	save_file.load_files()
+	save_file.player.pos = Vector2Int(2, 2)
 	save_file.save_files()
+	print(save_file.world[0].get_str(save_file.player.pos))
 
 if __name__ == "__main__": main()
