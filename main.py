@@ -610,18 +610,6 @@ class File:
 		with open(str(SAVE_FILE_PATHS[name]), "wb") as file:
 			pickle.dump(self.__getattribute__(name), file)
 
-# Misc Constants
-AREA_POS_TO_INDEX = {
-	Vector2Int(0, 0): 0,
-	Vector2Int(1, 0): 1,
-	Vector2Int(2, 0): 2,
-	Vector2Int(3, 0): 3,
-	Vector2Int(0, -1): 4,
-	Vector2Int(1, -1): 5,
-	Vector2Int(2, -1): 6,
-	Vector2Int(3, -1): 7
-}
-
 # Functions
 def cls():
 	"""Clears the terminal"""
@@ -653,6 +641,20 @@ def title_screen():
 
 		cls()
 		InvalidUserInput()
+
+def area_pos_to_index(pos: Vector2Int) -> int:
+	match pos:
+		case Vector2Int(0, 0): return 0
+		case Vector2Int(1, 0): return 1
+		case Vector2Int(2, 0): return 2
+		case Vector2Int(3, 0): return 3
+		case Vector2Int(0, -1): return 4
+		case Vector2Int(1, -1): return 5
+		case Vector2Int(2, -1): return 6
+		case Vector2Int(3, -1): return 7
+		case _:
+			if type(pos) is Vector2Int: raise ValueError
+			else: raise TypeError
 
 def get_input() -> tuple:
 	raw_input = input("> ")
@@ -687,7 +689,7 @@ def call_func_from_input(user_input: tuple, file: File) -> None:
 	match user_input[0]:
 		case UserInput.MOVE:
 			file.player.move(user_input[1],
-				file.world[AREA_POS_TO_INDEX[file.player.area_pos]]
+				file.world[area_pos_to_index(file.player.area_pos)]
 			)
 		case UserInput.ITEM_USE:
 			pass
