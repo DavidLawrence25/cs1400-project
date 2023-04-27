@@ -2,7 +2,7 @@
 ## Built-In
 from enum import Enum, auto
 from pathlib import Path
-from os import system
+from os import system, get_terminal_size
 from os import name as os_name
 import pickle
 
@@ -15,12 +15,6 @@ DEFAULT_FILE_PATHS = {
 	"world": APP_ROOT / "DefaultSaveData" / "world.pkl",
 	"player": APP_ROOT / "DefaultSaveData" / "player.pkl"
 }
-
-import logging
-logging.basicConfig(
-	format = "[%(levelname)s] %(message)s",
-	level = logging.DEBUG
-)
 
 # Classes
 ## Utilities
@@ -165,8 +159,7 @@ class UserInput(Enum):
 		QUIT: Quit the game
 	"""
 	MOVE = auto()
-	ITEM_USE = auto()
-	ITEM_INFO = auto()
+	ITEM = auto()
 	INV_VIEW = auto()
 	HINT = auto()
 	CMD_LIST = auto()
@@ -174,9 +167,26 @@ class UserInput(Enum):
 	LOAD = auto()
 	QUIT = auto()
 
+class ItemAction(Enum):
+	USE = auto()
+	INFO = auto()
+
 ## Log Events
+class Logger:
+	""""""
+
+	DEBUG = "DEBUG"
+	INFO = "INFO"
+	WARNING = "WARNING"
+	ERROR = "ERROR"
+	CRITICAL = "CRITICAL"
+
+	@staticmethod
+	def format_message(event_type: str, msg: str, level: str) -> str:
+		return f"[{level}] {event_type} - {msg}"
+
 class CustomLogEvent:
-	"""A base class for calling log events via the logging module.
+	"""A base class for calling log events
 
 	Attributes:
 		level: The severity level for this event
@@ -185,11 +195,12 @@ class CustomLogEvent:
 
 		event_msg: What the message should be for this event
 	"""
-	def __init__(self,
-				level = logging.INFO,
-				event_type = "UnknownEvent",
-				event_msg = "An unknown event has occured.") -> None:
-		"""Initializes and calls the event
+
+	@staticmethod
+	def call(level = Logger.INFO,
+			event_type = "UnknownEvent",
+			event_msg = "An unknown event has occured.") -> str:
+		"""Makes a string for this event, calling it if it's critical
 
 		Args:
 			level: The severity level for this event
@@ -198,54 +209,65 @@ class CustomLogEvent:
 
 			event_msg: What the message should be for this event
 		"""
-		self.level = level
-		self.event_type = event_type
-		self.event_msg = event_msg
-
-		string = f"{self.event_type} - {self.event_msg}"
-		match self.level:
-			case logging.DEBUG: logging.debug(string)
-			case logging.INFO: logging.info(string)
-			case logging.WARNING: logging.warning(string)
-			case logging.ERROR: logging.error(string)
-			case logging.CRITICAL:
-				logging.critical(string)
-				exit()
+		string = Logger.format_message(event_type, event_msg, level)
+		if level is Logger.CRITICAL:
+			print(string)
+			exit()
+		return string
 
 class HitWall(CustomLogEvent):
 	"""The player hit a wall whilst trying to move"""
-	def __init__(self):
-		super().__init__(logging.INFO,
-						"HitWall",
-						"A wall blocks your path.")
+
+	@staticmethod
+	def call():
+		return super().call(Logger.INFO,
+							"HitWall",
+							"A wall blocks your path")
 
 class InvalidDirection(CustomLogEvent):
 	"""The player somehow moved in a non-cardinal direction"""
-	def __init__(self):
-		super().__init__(logging.ERROR,
-						"InvalidDirection",
-						"An invalid direction was passed into Player.move().")
+
+	@staticmethod
+	def call():
+		return super().call(Logger.ERROR,
+							"InvalidDirection",
+							"An invalid direction was passed into move")
 
 class UnassignedVariable(CustomLogEvent):
 	"""The code somehow failed to assign a value to a variable"""
-	def __init__(self):
-		super().__init__(logging.ERROR,
-						"UnassignedVariable",
-						"The code didn't assign a value to a variable.")
+
+	@staticmethod
+	def call():
+		return super().call(Logger.CRITICAL,
+							"UnassignedVariable",
+							"The code didn't assign a value to a variable")
 
 class UnexpectedTileChar(CustomLogEvent):
 	"""There was an unexpected tile character in the area string"""
-	def __init__(self):
-		super().__init__(logging.ERROR,
-						"UnexpectedTileChar",
-						"Area could not be created from string")
+
+	@staticmethod
+	def call():
+		return super().call(Logger.CRITICAL,
+							"UnexpectedTileChar",
+							"Area could not be created from string")
 
 class InvalidUserInput(CustomLogEvent):
 	"""The user did not give a valid input"""
-	def __init__(self):
-		super().__init__(logging.WARNING,
-						"InvalidUserInput",
-						"Command was not recognized")
+
+	@staticmethod
+	def call():
+		return super().call(Logger.WARNING,
+							"InvalidUserInput",
+							"Command was not recognized")
+
+class ItemNotFound(CustomLogEvent):
+	"""The item specified doesn't exist in the player's inventory"""
+
+	@staticmethod
+	def call():
+		return super().call(Logger.WARNING,
+							"ItemNotFound",
+							"That item isn't in your inventory")
 
 ## Main
 class Tile:
@@ -378,17 +400,15 @@ class Area:
 		return (tile_pos_0, tile_pos_1, area_pos)
 
 	@staticmethod
-	def create_from_str(string: str):
+	def create_from_str(string: str, narrator):
 		"""Returns a new area created from a string (this is a temporary
 		method)
 
 		Args:
 			string: The string to read data from
+			narrator: The instance of the Narrator class
 
 		Raises:
-			UnassignedVariable: The code somehow failed to assign a
-			value to a variable
-
 			UnexpectedTileChar: There was an unexpected tile character
 			in the area string
 		"""
@@ -428,7 +448,7 @@ class Area:
 						Area.generate_passage_pair(Vector2Int(x, y))
 					)
 				else:
-					UnexpectedTileChar()
+					narrator.feedback = UnexpectedTileChar.call()
 
 		return result
 
@@ -466,13 +486,15 @@ class Player:
 		self.area_pos = area_pos
 		self.inventory = []
 
-	def move(self, direction: Direction, area: Area) -> None:
+	def move(self, direction: Direction, area: Area, narrator) -> None:
 		"""Try to move the player in a specified direction
 
 		Args:
 			direction: The direction the player tries to move in
 
 			area: The area the player is currently in
+
+			narrator: The instance of the Narrator class
 
 		Raises:
 			InvalidDirection: direction wasn't in the Direction enum
@@ -485,13 +507,13 @@ class Player:
 			case Direction.EAST: input_vector = Vector2Int.right()
 			case Direction.WEST: input_vector = Vector2Int.left()
 			case _:
-				InvalidDirection()
+				narrator.feedback = InvalidDirection.call()
 				return
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
 		match target_tile.name:
-			case "wall": HitWall()
+			case "wall": narrator.feedback = HitWall.call()
 			case "passage":
 				pass # TODO: create a function to move between rooms
 			case "item":
@@ -514,6 +536,8 @@ class Item:
 
 		func: The function to call when used
 
+		info_address: The address of the info text in narration.txt
+
 		count: How many copies of the item the player has
 
 	Methods:
@@ -528,6 +552,7 @@ class Item:
 				id: str,
 				consumable: bool,
 				func,
+				info_address: int,
 				count: int = 1) -> None:
 		"""Creates an item, but doesn't put it in the player's inventory
 
@@ -541,12 +566,15 @@ class Item:
 
 			func: The function to call when used
 
+			info_address: The address of the info text in narration.txt
+
 			count: How many copies of the item the player has
 		"""
 		self.display_name = display_name
 		self.id = id
 		self.consumable = consumable
 		self.func = func
+		self.info_address = info_address
 		self.count = count
 
 	def increment_count(self, step: int = 1) -> None:
@@ -610,49 +638,117 @@ class File:
 		with open(str(SAVE_FILE_PATHS[name]), "wb") as file:
 			pickle.dump(self.__getattribute__(name), file)
 
-# Misc Constants
-AREA_POS_TO_INDEX = {
-	Vector2Int(0, 0): 0,
-	Vector2Int(1, 0): 1,
-	Vector2Int(2, 0): 2,
-	Vector2Int(3, 0): 3,
-	Vector2Int(0, -1): 4,
-	Vector2Int(1, -1): 5,
-	Vector2Int(2, -1): 6,
-	Vector2Int(3, -1): 7
-}
+class Narrator:
+	"""A simple narrator that stores all of the complex narration code
+
+	Attributes:
+		map: A string representation of the current area
+
+		narration: The most recent string retrieved from narration.txt
+
+		feedback: The message from the most recent logging event
+
+	Constants:
+		COMMENT_CHAR: The character for comments in narration.txt
+
+	Methods:
+		get_string(addr): Returns a string from the narration file
+	"""
+
+	COMMENT_CHAR = "#"
+
+	def __init__(self) -> None:
+		self.map: str = ""
+		self.narration: str = ""
+		self.feedback: str = ""
+
+	@staticmethod
+	def get_narration(addr: int) -> str:
+		"""Return a string from the narration file"""
+		# open the file
+		with open("narration.txt", "r") as file:
+			# make address strings to check against
+			addr_start = f"%{addr}%\n"
+			addr_end = f"%{addr + 1}%\n"
+			# get the text
+			text = ""
+			is_reading = False
+			for line in file:
+				if is_reading:
+					if line == addr_end: break
+					elif line[0] == Narrator.COMMENT_CHAR: continue
+					else: text += line
+				if line == addr_start: is_reading = True
+		return text.strip()
+
+	@staticmethod
+	def get_inventory(player: Player) -> str:
+		inventory = player.inventory
+		output = "-- INVENTORY --\n"
+		for item in inventory:
+			output += f"{item.display_name:<10} | {item.count:>2}\n"
+		return output
+
+	@staticmethod
+	def cls() -> None:
+		"""Clears the terminal"""
+		system("cls" if os_name == "nt" else "clear")
+
+	@staticmethod
+	def display(map_str: str, narration: str, feedback: str) -> None:
+		map_lines = map_str.splitlines()
+		text_lines = feedback.splitlines()
+		if feedback != "": text_lines.append("")
+		text_lines.append(*narration.splitlines())
+		terminal_w = get_terminal_size().columns
+		map_w = len(map_lines[0])
+		text_w = terminal_w - map_w
+		if len(map_lines) > len(text_lines):
+			iter_count = len(map_lines)
+		else:
+			iter_count = len(text_lines)
+
+		output = ""
+		for i in range(iter_count):
+			if len(map_lines) > i and len(text_lines) > i:
+				output += f"{text_lines[i]:<{text_w}}{map_lines[i]}\n"
+			elif len(text_lines) > i:
+				output += f"{text_lines[i]:<{text_w}}\n"
+			else:
+				output += f"{map_lines[i]:>{terminal_w}}\n"
+
+		Narrator.cls()
+		print(output)
 
 # Functions
-def cls():
-	"""Clears the terminal"""
-	system("cls" if os_name == "nt" else "clear")
-
-def title_screen():
+def title_screen(narrator: Narrator):
 	"""Display the title screen and get the appropriate input
 
 	Raises:
 		InvalidUserInput: The user did not give a valid input
 	"""
-	DISPLAY_TEXT = r"""
- _                   _              _   _____
-| |                 | |            | | |_   _|
-| |      ___    ___ | | __ ___   __| |   | |  _ __
-| |     / _ \  / __|| |/ // _ \ / _` |   | | | '_ \
-| |____| (_) || (__ |   <|  __/| (_| |  _| |_| | | |
-\_____/ \___/  \___||_|\_\\___| \__,_|  \___/|_| |_|
-         A Text Adventure by David Lawrence
-
-                   p > Play Game
-                   q > Quit
-	"""
+	DISPLAY_TEXT = Narrator.get_narration(2)
 	while True:
 		print(DISPLAY_TEXT)
 		raw_input = input("> ")
 		if raw_input == "q": exit()
 		elif raw_input == "p": return
 
-		cls()
-		InvalidUserInput()
+		narrator.feedback = InvalidUserInput.call()
+
+def area_pos_to_index(pos: Vector2Int) -> int:
+	match pos:
+		case Vector2Int(0, 0): return 0
+		case Vector2Int(1, 0): return 1
+		case Vector2Int(2, 0): return 2
+		case Vector2Int(3, 0): return 3
+		case Vector2Int(0, -1): return 4
+		case Vector2Int(1, -1): return 5
+		case Vector2Int(2, -1): return 6
+		case Vector2Int(3, -1): return 7
+		case _:
+			if type(pos) is Vector2Int: raise ValueError
+			else: raise TypeError
 
 def get_input() -> tuple:
 	raw_input = input("> ")
@@ -669,8 +765,8 @@ def get_input() -> tuple:
 				case "south" | "s": return (UserInput.MOVE, Direction.SOUTH)
 				case "east" | "e": return (UserInput.MOVE, Direction.EAST)
 				case "west" | "w": return (UserInput.MOVE, Direction.WEST)
-		case "use": return (UserInput.ITEM_USE, *args)
-		case "info":return (UserInput.ITEM_INFO, *args)
+		case "use": return (UserInput.ITEM, ItemAction.USE, *args[1:])
+		case "info": return (UserInput.ITEM, ItemAction.INFO, *args[1:])
 		case "inv": return (UserInput.INV_VIEW,)
 		case "help": return (UserInput.CMD_LIST,)
 		case "?": return (UserInput.HINT,)
@@ -683,33 +779,62 @@ def get_input() -> tuple:
 	InvalidUserInput()
 	return ()
 
-def call_func_from_input(user_input: tuple, file: File) -> None:
+def call_func_from_input(user_input: tuple,
+						file: File,
+						narrator: Narrator) -> None:
 	match user_input[0]:
 		case UserInput.MOVE:
-			file.player.move(user_input[1],
-				file.world[AREA_POS_TO_INDEX[file.player.area_pos]]
+			file.player.move(
+				user_input[1],
+				file.world[area_pos_to_index(file.player.area_pos)],
+				narrator
 			)
-		case UserInput.ITEM_USE:
-			pass
-		case UserInput.ITEM_INFO:
-			pass
+		case UserInput.ITEM:
+			item = None
+			has_found_item = False
+			for item in file.player.inventory:
+				if item.id == user_input[2]:
+					item = item
+					has_found_item = True
+					break
+			if not has_found_item:
+				ItemNotFound()
+				return
+			if item is None:
+				UnassignedVariable()
+				return
+			elif user_input[1] == ItemAction.USE:
+				item.use()
+			elif user_input[1] == ItemAction.INFO:
+				narrator.feedback = Narrator.get_narration(item.info_address)
 		case UserInput.INV_VIEW:
-			pass
+			narrator.feedback = Narrator.get_inventory(file.player)
 		case UserInput.CMD_LIST:
-			pass
+			narrator.feedback = Narrator.get_narration(1)
 		case UserInput.HINT:
 			pass
+			#???
 		case UserInput.SAVE:
-			pass
+			file.save_files()
 		case UserInput.LOAD:
 			pass
+			#check if there is any unsaved progress
+			#if there is, warn the player
+			#if they're sure they want to load the save (or all their
+			#progress is saved), call the load method for the file
+			#object
 		case UserInput.QUIT:
 			pass
+			#check if there is any unsaved progress
+			#if there is, warn the player
+			#if they're sure they want to quit (or all their progress is
+			#saved), exit
 
 def main() -> None:
 	save_file = File()
-	title_screen()
-	cls()
+	narrator = Narrator()
+	title_screen(narrator)
+	Narrator.cls()
 	save_file.load_files()
 	save_file.player.pos = Vector2Int(2, 2)
 	save_file.save_files()

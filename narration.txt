@@ -7,12 +7,16 @@ inv:              Display the inventory
 ?:                Display this list
 file [option]:    Save, load, or quit the game
 %2%
-Somebody once told me the world is gonna roll me
-I ain't the sharpest tool in the shed
-She was lookin' kinda dumb with her finger and her thumb
-in the shape of an L on her forehead
-I don't really know what else to write here...
-Yeah, we're just gonna roll with this.
+ _                   _              _   _____
+| |                 | |            | | |_   _|
+| |      ___    ___ | | __ ___   __| |   | |  _ __
+| |     / _ \  / __|| |/ // _ \ / _` |   | | | '_ \
+| |____| (_) || (__ |   <|  __/| (_| |  _| |_| | | |
+\_____/ \___/  \___||_|\_\\___| \__,_|  \___/|_| |_|
+         A Text Adventure by David Lawrence
+
+                   p > Play Game
+                   q > Quit
 %3%
 
 # note: there must always be a new line after the last address.
