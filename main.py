@@ -269,6 +269,15 @@ class ItemNotFound(CustomLogEvent):
 							"ItemNotFound",
 							"That item isn't in your inventory")
 
+class UnsavedProgress(CustomLogEvent):
+	"""There is unsaved progress that may be erased"""
+
+	@staticmethod
+	def call():
+		return super().call(Logger.WARNING,
+							"UnsavedProgress",
+							"You have unsaved progress. Are you sure?")
+
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -781,7 +790,10 @@ def get_input() -> tuple:
 
 def call_func_from_input(user_input: tuple,
 						file: File,
-						narrator: Narrator) -> None:
+						narrator: Narrator,
+						is_progress_saved: bool) -> bool:
+	"""Calls a function based on the input, returns whether or not the
+	player's progress is saved."""
 	match user_input[0]:
 		case UserInput.MOVE:
 			file.player.move(
@@ -817,22 +829,31 @@ def call_func_from_input(user_input: tuple,
 		case UserInput.SAVE:
 			file.save_files()
 		case UserInput.LOAD:
-			pass
-			#check if there is any unsaved progress
-			#if there is, warn the player
-			#if they're sure they want to load the save (or all their
-			#progress is saved), call the load method for the file
-			#object
+			should_quit = False
+			if not is_progress_saved:
+				confirmation = ""
+				while confirmation not in ("y", "yes", "n", "no"):
+					confirmation = input(f"{UnsavedProgress()} > ")
+				should_quit = "y" in confirmation
+			else:
+				should_quit = True
+			if should_quit: file.load_files()
 		case UserInput.QUIT:
-			pass
-			#check if there is any unsaved progress
-			#if there is, warn the player
-			#if they're sure they want to quit (or all their progress is
-			#saved), exit
+			should_quit = False
+			if not is_progress_saved:
+				confirmation = ""
+				while confirmation not in ("y", "yes", "n", "no"):
+					confirmation = input(f"{UnsavedProgress()} > ")
+				should_quit = "y" in confirmation
+			else:
+				should_quit = True
+			if should_quit: exit()
+	return user_input[0] in (UserInput.MOVE, UserInput.ITEM)
 
 def main() -> None:
 	save_file = File()
 	narrator = Narrator()
+	is_progress_saved = True
 	title_screen(narrator)
 	Narrator.cls()
 	save_file.load_files()
