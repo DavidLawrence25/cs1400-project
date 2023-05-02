@@ -775,10 +775,10 @@ def call_func_from_input(user_input: tuple,
 					break
 			if not has_found_item:
 				log_item_not_found()
-				return
+				return is_progress_saved
 			if item is None:
 				log_unassigned_variable()
-				return
+				return is_progress_saved
 			elif user_input[1] == ItemAction.USE:
 				item.use()
 			elif user_input[1] == ItemAction.INFO:
