@@ -161,7 +161,6 @@ class UserInput(Enum):
 	MOVE = auto()
 	ITEM = auto()
 	INV_VIEW = auto()
-	HINT = auto()
 	CMD_LIST = auto()
 	SAVE = auto()
 	LOAD = auto()
@@ -196,6 +195,8 @@ class CustomLogEvent:
 		event_msg: What the message should be for this event
 	"""
 
+	def __init__(self): return None
+
 	@staticmethod
 	def call(level = Logger.INFO,
 			event_type = "UnknownEvent",
@@ -215,68 +216,54 @@ class CustomLogEvent:
 			exit()
 		return string
 
-class HitWall(CustomLogEvent):
+def log_hit_wall():
 	"""The player hit a wall whilst trying to move"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.INFO,
-							"HitWall",
-							"A wall blocks your path")
+	return CustomLogEvent.call(Logger.INFO,
+								"HitWall",
+								"A wall blocks your path")
 
-class InvalidDirection(CustomLogEvent):
+def log_invalid_direction():
 	"""The player somehow moved in a non-cardinal direction"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.ERROR,
-							"InvalidDirection",
-							"An invalid direction was passed into move")
+	return CustomLogEvent.call(Logger.ERROR,
+								"InvalidDirection",
+								"An invalid direction was passed into move")
 
-class UnassignedVariable(CustomLogEvent):
+def log_unassigned_variable():
 	"""The code somehow failed to assign a value to a variable"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.CRITICAL,
-							"UnassignedVariable",
-							"The code didn't assign a value to a variable")
+	return CustomLogEvent.call(Logger.CRITICAL,
+								"UnassignedVariable",
+								"The code didn't assign a value to a variable")
 
-class UnexpectedTileChar(CustomLogEvent):
+def log_unexpected_tile_char():
 	"""There was an unexpected tile character in the area string"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.CRITICAL,
-							"UnexpectedTileChar",
-							"Area could not be created from string")
+	return CustomLogEvent.call(Logger.CRITICAL,
+								"UnexpectedTileChar",
+								"Area could not be created from string")
 
-class InvalidUserInput(CustomLogEvent):
+def log_invalid_user_input():
 	"""The user did not give a valid input"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.WARNING,
-							"InvalidUserInput",
-							"Command was not recognized")
+	return CustomLogEvent.call(Logger.WARNING,
+								"InvalidUserInput",
+								"Command was not recognized")
 
-class ItemNotFound(CustomLogEvent):
+def log_item_not_found():
 	"""The item specified doesn't exist in the player's inventory"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.WARNING,
-							"ItemNotFound",
-							"That item isn't in your inventory")
+	return CustomLogEvent.call(Logger.WARNING,
+								"ItemNotFound",
+								"That item isn't in your inventory")
 
-class UnsavedProgress(CustomLogEvent):
+def log_unsaved_progress():
 	"""There is unsaved progress that may be erased"""
 
-	@staticmethod
-	def call():
-		return super().call(Logger.WARNING,
-							"UnsavedProgress",
-							"You have unsaved progress. Are you sure?")
+	return CustomLogEvent.call(Logger.WARNING,
+								"UnsavedProgress",
+								"You have unsaved progress. Are you sure?")
 
 ## Main
 class Tile:
@@ -457,7 +444,7 @@ class Area:
 						Area.generate_passage_pair(Vector2Int(x, y))
 					)
 				else:
-					narrator.feedback = UnexpectedTileChar.call()
+					narrator.feedback = log_unexpected_tile_char()
 
 		return result
 
@@ -516,13 +503,13 @@ class Player:
 			case Direction.EAST: input_vector = Vector2Int.right()
 			case Direction.WEST: input_vector = Vector2Int.left()
 			case _:
-				narrator.feedback = InvalidDirection.call()
+				narrator.feedback = log_invalid_direction()
 				return
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
 		match target_tile.name:
-			case "wall": narrator.feedback = HitWall.call()
+			case "wall": narrator.feedback = log_hit_wall()
 			case "passage":
 				pass # TODO: create a function to move between rooms
 			case "item":
@@ -705,29 +692,8 @@ class Narrator:
 
 	@staticmethod
 	def display(map_str: str, narration: str, feedback: str) -> None:
-		map_lines = map_str.splitlines()
-		text_lines = feedback.splitlines()
-		if feedback != "": text_lines.append("")
-		text_lines.append(*narration.splitlines())
-		terminal_w = get_terminal_size().columns
-		map_w = len(map_lines[0])
-		text_w = terminal_w - map_w
-		if len(map_lines) > len(text_lines):
-			iter_count = len(map_lines)
-		else:
-			iter_count = len(text_lines)
-
-		output = ""
-		for i in range(iter_count):
-			if len(map_lines) > i and len(text_lines) > i:
-				output += f"{text_lines[i]:<{text_w}}{map_lines[i]}\n"
-			elif len(text_lines) > i:
-				output += f"{text_lines[i]:<{text_w}}\n"
-			else:
-				output += f"{map_lines[i]:>{terminal_w}}\n"
-
 		Narrator.cls()
-		print(output)
+		print(f"{feedback}\n{map_str}\n{narration}")
 
 # Functions
 def title_screen(narrator: Narrator):
@@ -743,21 +709,19 @@ def title_screen(narrator: Narrator):
 		if raw_input == "q": exit()
 		elif raw_input == "p": return
 
-		narrator.feedback = InvalidUserInput.call()
+		narrator.feedback = log_invalid_user_input()
 
 def area_pos_to_index(pos: Vector2Int) -> int:
-	match pos:
-		case Vector2Int(0, 0): return 0
-		case Vector2Int(1, 0): return 1
-		case Vector2Int(2, 0): return 2
-		case Vector2Int(3, 0): return 3
-		case Vector2Int(0, -1): return 4
-		case Vector2Int(1, -1): return 5
-		case Vector2Int(2, -1): return 6
-		case Vector2Int(3, -1): return 7
-		case _:
-			if type(pos) is Vector2Int: raise ValueError
-			else: raise TypeError
+	if pos == Vector2Int(0, 0): return 0
+	elif pos == Vector2Int(1, 0): return 1
+	elif pos == Vector2Int(2, 0): return 2
+	elif pos == Vector2Int(3, 0): return 3
+	elif pos == Vector2Int(0, -1): return 4
+	elif pos == Vector2Int(0, -1): return 5
+	elif pos == Vector2Int(0, -1): return 6
+	elif pos == Vector2Int(0, -1): return 7
+	elif type(pos) is Vector2Int: raise ValueError
+	else: raise TypeError
 
 def get_input() -> tuple:
 	raw_input = input("> ")
@@ -778,14 +742,13 @@ def get_input() -> tuple:
 		case "info": return (UserInput.ITEM, ItemAction.INFO, *args[1:])
 		case "inv": return (UserInput.INV_VIEW,)
 		case "help": return (UserInput.CMD_LIST,)
-		case "?": return (UserInput.HINT,)
 		case "file":
 			match args[0]:
 				case "save" | "s": return (UserInput.SAVE,)
 				case "load" | "l": return (UserInput.LOAD,)
 				case "quit" | "q": return (UserInput.QUIT,)
 
-	InvalidUserInput()
+	log_invalid_user_input()
 	return ()
 
 def call_func_from_input(user_input: tuple,
@@ -794,6 +757,7 @@ def call_func_from_input(user_input: tuple,
 						is_progress_saved: bool) -> bool:
 	"""Calls a function based on the input, returns whether or not the
 	player's progress is saved."""
+	if len(user_input) == 0: return False
 	match user_input[0]:
 		case UserInput.MOVE:
 			file.player.move(
@@ -810,10 +774,10 @@ def call_func_from_input(user_input: tuple,
 					has_found_item = True
 					break
 			if not has_found_item:
-				ItemNotFound()
+				log_item_not_found()
 				return
 			if item is None:
-				UnassignedVariable()
+				log_unassigned_variable()
 				return
 			elif user_input[1] == ItemAction.USE:
 				item.use()
@@ -823,9 +787,6 @@ def call_func_from_input(user_input: tuple,
 			narrator.feedback = Narrator.get_inventory(file.player)
 		case UserInput.CMD_LIST:
 			narrator.feedback = Narrator.get_narration(1)
-		case UserInput.HINT:
-			pass
-			#???
 		case UserInput.SAVE:
 			file.save_files()
 		case UserInput.LOAD:
@@ -833,7 +794,7 @@ def call_func_from_input(user_input: tuple,
 			if not is_progress_saved:
 				confirmation = ""
 				while confirmation not in ("y", "yes", "n", "no"):
-					confirmation = input(f"{UnsavedProgress()} > ")
+					confirmation = input(f"{log_unsaved_progress()} > ")
 				should_quit = "y" in confirmation
 			else:
 				should_quit = True
@@ -843,7 +804,7 @@ def call_func_from_input(user_input: tuple,
 			if not is_progress_saved:
 				confirmation = ""
 				while confirmation not in ("y", "yes", "n", "no"):
-					confirmation = input(f"{UnsavedProgress()} > ")
+					confirmation = input(f"{log_unsaved_progress()} > ")
 				should_quit = "y" in confirmation
 			else:
 				should_quit = True
@@ -859,7 +820,14 @@ def main() -> None:
 	save_file.load_files()
 	save_file.player.pos = Vector2Int(2, 2)
 	save_file.save_files()
-	print(save_file.world[0].get_str(save_file.player.pos))
-	print(get_input())
+	while True:
+		area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
+		le_map = area.get_str(save_file.player.pos)
+		narrator.narration = narrator.get_narration(3)
+		call_func_from_input(get_input(),
+							save_file,
+							narrator,
+							is_progress_saved)
+		narrator.display(le_map, narrator.narration, narrator.feedback)
 
 if __name__ == "__main__": main()

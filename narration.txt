@@ -18,5 +18,10 @@ file [option]:    Save, load, or quit the game
                    p > Play Game
                    q > Quit
 %3%
+Somebody once told me the world was gonna roll me
+I ain't the sharpest tool in the shed
+She was looking kinda dumb with her finger and her thumb
+In the shape of an L on a forehead
+%4%
 
 # note: there must always be a new line after the last address.
