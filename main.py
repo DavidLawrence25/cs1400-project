@@ -2,7 +2,7 @@
 ## Built-In
 from enum import Enum, auto
 from pathlib import Path
-from os import system, get_terminal_size
+from os import system
 from os import name as os_name
 import pickle
 
@@ -445,6 +445,7 @@ class Area:
 					)
 				else:
 					narrator.feedback = log_unexpected_tile_char()
+					narrator.has_updated_feedback = True
 
 		return result
 
@@ -504,12 +505,15 @@ class Player:
 			case Direction.WEST: input_vector = Vector2Int.left()
 			case _:
 				narrator.feedback = log_invalid_direction()
+				narrator.has_updated_feedback = True
 				return
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
 		match target_tile.name:
-			case "wall": narrator.feedback = log_hit_wall()
+			case "wall":
+				narrator.feedback = log_hit_wall()
+				narrator.has_updated_feedback = True
 			case "passage":
 				pass # TODO: create a function to move between rooms
 			case "item":
@@ -657,6 +661,7 @@ class Narrator:
 		self.map: str = ""
 		self.narration: str = ""
 		self.feedback: str = ""
+		self.has_updated_feedback: bool = False
 
 	@staticmethod
 	def get_narration(addr: int) -> str:
@@ -675,7 +680,7 @@ class Narrator:
 					elif line[0] == Narrator.COMMENT_CHAR: continue
 					else: text += line
 				if line == addr_start: is_reading = True
-		return text.strip()
+		return text[:len(text) - 1]
 
 	@staticmethod
 	def get_inventory(player: Player) -> str:
@@ -693,7 +698,8 @@ class Narrator:
 	@staticmethod
 	def display(map_str: str, narration: str, feedback: str) -> None:
 		Narrator.cls()
-		print(f"{feedback}\n{map_str}\n{narration}")
+		if feedback == "": print(f"{map_str}\n{narration}")
+		else: print(f"{feedback}\n{map_str}\n{narration}")
 
 # Functions
 def title_screen(narrator: Narrator):
@@ -710,6 +716,7 @@ def title_screen(narrator: Narrator):
 		elif raw_input == "p": return
 
 		narrator.feedback = log_invalid_user_input()
+		narrator.has_updated_feedback = True
 
 def area_pos_to_index(pos: Vector2Int) -> int:
 	if pos == Vector2Int(0, 0): return 0
@@ -723,7 +730,7 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	elif type(pos) is Vector2Int: raise ValueError
 	else: raise TypeError
 
-def get_input() -> tuple:
+def get_input(narrator: Narrator) -> tuple:
 	raw_input = input("> ")
 	cmd = raw_input.split(" ")[0]
 	args = raw_input.split(" ")[1:]
@@ -748,7 +755,8 @@ def get_input() -> tuple:
 				case "load" | "l": return (UserInput.LOAD,)
 				case "quit" | "q": return (UserInput.QUIT,)
 
-	log_invalid_user_input()
+	narrator.feedback = log_invalid_user_input()
+	narrator.has_updated_feedback = True
 	return ()
 
 def call_func_from_input(user_input: tuple,
@@ -783,10 +791,13 @@ def call_func_from_input(user_input: tuple,
 				item.use()
 			elif user_input[1] == ItemAction.INFO:
 				narrator.feedback = Narrator.get_narration(item.info_address)
+				narrator.has_updated_feedback = True
 		case UserInput.INV_VIEW:
 			narrator.feedback = Narrator.get_inventory(file.player)
+			narrator.has_updated_feedback = True
 		case UserInput.CMD_LIST:
 			narrator.feedback = Narrator.get_narration(1)
+			narrator.has_updated_feedback = True
 		case UserInput.SAVE:
 			file.save_files()
 		case UserInput.LOAD:
@@ -818,16 +829,23 @@ def main() -> None:
 	title_screen(narrator)
 	Narrator.cls()
 	save_file.load_files()
-	save_file.player.pos = Vector2Int(2, 2)
-	save_file.save_files()
+	#save_file.player.pos = Vector2Int(2, 2)
+	#save_file.save_files()
+	area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
+	le_map = area.get_str(save_file.player.pos)
+	narrator.narration = narrator.get_narration(3)
+	narrator.display(le_map, narrator.narration, narrator.feedback)
 	while True:
-		area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
-		le_map = area.get_str(save_file.player.pos)
-		narrator.narration = narrator.get_narration(3)
-		call_func_from_input(get_input(),
+		user_input = get_input(narrator)
+		call_func_from_input(user_input,
 							save_file,
 							narrator,
 							is_progress_saved)
+		area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
+		le_map = area.get_str(save_file.player.pos)
+		if not narrator.has_updated_feedback: narrator.feedback = ""
+		narrator.narration = narrator.get_narration(3)
 		narrator.display(le_map, narrator.narration, narrator.feedback)
+		narrator.has_updated_feedback = False
 
 if __name__ == "__main__": main()

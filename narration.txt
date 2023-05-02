@@ -1,10 +1,10 @@
 %1%
 -- COMMAND LIST --
-move [direction]: Move in a cardinal direction
+move [direction]: Move in a cardinal direction (WASD also works)
 use [item]:       Use an item if possible
 info [item]:      Display the details of an item inside your inventory
 inv:              Display the inventory
-?:                Display this list
+help:             Display this list
 file [option]:    Save, load, or quit the game
 %2%
  _                   _              _   _____
