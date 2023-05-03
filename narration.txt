@@ -18,10 +18,17 @@ file [option]:    Save, load, or quit the game
                    p > Play Game
                    q > Quit
 %3%
-Somebody once told me the world was gonna roll me
-I ain't the sharpest tool in the shed
-She was looking kinda dumb with her finger and her thumb
-In the shape of an L on a forehead
+It seems like last night was ages ago. You were goofing around at a
+bar with your friend, and you felt too queasy to stay there anymore.
+You don't remember much of your drunken night out, but you vaguely
+remember telling your friend to lock your high-tech front door...
+
+South of your full-sized bed are some double doors leading to the
+office. To the east is a closet door. To the west, you see a small
+nightstand with a lamp and some papers on it. As you ponder your
+existence, you realize you should really get around to decorating
+your pathetic little bedroom. Perhaps inspiration will strike after
+a short walk around the neighborhood.
 %4%
 
 # note: there must always be a new line after the last address.

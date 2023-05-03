@@ -340,7 +340,11 @@ class Area:
 		"passageD": "⬇⬇"
 	}
 
-	def __init__(self, name: str, pos: Vector2Int, size: Vector2Int) -> None:
+	def __init__(self,
+				name: str,
+				pos: Vector2Int,
+				size: Vector2Int,
+				narration_address: int) -> None:
 		"""Creates an area object filled with air tiles
 
 		Args:
@@ -353,6 +357,7 @@ class Area:
 		self.name = name
 		self.pos = pos
 		self.size = size
+		self.narration_address = narration_address
 		self.tiles = []
 		self.passages = [] # [(passage_a, passage_b, that_area)]
 
@@ -412,7 +417,8 @@ class Area:
 		size = Vector2Int(len(lines[0]), len(lines))
 		name = input("Enter name > ")
 		pos = Vector2Int.get_from_user()
-		result = Area(name, pos, size)
+		narration_address = int(input("Enter narration index > "))
+		result = Area(name, pos, size, narration_address)
 		for y, line in enumerate(lines):
 			result.tiles.append([])
 			for x, tile in enumerate(line):
@@ -659,7 +665,6 @@ class Narrator:
 
 	def __init__(self) -> None:
 		self.map: str = ""
-		self.narration: str = ""
 		self.feedback: str = ""
 		self.has_updated_feedback: bool = False
 
@@ -695,11 +700,21 @@ class Narrator:
 		"""Clears the terminal"""
 		system("cls" if os_name == "nt" else "clear")
 
-	@staticmethod
-	def display(map_str: str, narration: str, feedback: str) -> None:
+	def display(self, file: File) -> None:
+		# extract the area, area string, and narration
+		area = file.world[area_pos_to_index(file.player.area_pos)]
+		area_str = area.get_str(file.player.pos)
+		narration = Narrator.get_narration(area.narration_address)
+		# clear the terminal
 		Narrator.cls()
-		if feedback == "": print(f"{map_str}\n{narration}")
-		else: print(f"{feedback}\n{map_str}\n{narration}")
+		# print the stuff
+		# if the feedback's been updated, print that too
+		if self.has_updated_feedback:
+			print(f"{self.feedback}\n-- {area.name} --\n{area_str}\n{narration}")
+		else:
+			print(f"-- {area.name} --\n{area_str}\n{narration}")
+		# reset the updated feedback flag
+		self.has_updated_feedback = False
 
 # Functions
 def title_screen(narrator: Narrator):
@@ -826,26 +841,17 @@ def main() -> None:
 	save_file = File()
 	narrator = Narrator()
 	is_progress_saved = True
+
 	title_screen(narrator)
-	Narrator.cls()
 	save_file.load_files()
-	#save_file.player.pos = Vector2Int(2, 2)
-	#save_file.save_files()
-	area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
-	le_map = area.get_str(save_file.player.pos)
-	narrator.narration = narrator.get_narration(3)
-	narrator.display(le_map, narrator.narration, narrator.feedback)
+
+	narrator.display(save_file)
 	while True:
 		user_input = get_input(narrator)
 		call_func_from_input(user_input,
 							save_file,
 							narrator,
 							is_progress_saved)
-		area = save_file.world[area_pos_to_index(save_file.player.area_pos)]
-		le_map = area.get_str(save_file.player.pos)
-		if not narrator.has_updated_feedback: narrator.feedback = ""
-		narrator.narration = narrator.get_narration(3)
-		narrator.display(le_map, narrator.narration, narrator.feedback)
-		narrator.has_updated_feedback = False
+		narrator.display(save_file)
 
 if __name__ == "__main__": main()
