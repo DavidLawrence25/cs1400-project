@@ -451,7 +451,6 @@ class Area:
 					)
 				else:
 					narrator.feedback = log_unexpected_tile_char()
-					narrator.has_updated_feedback = True
 
 		return result
 
@@ -511,7 +510,6 @@ class Player:
 			case Direction.WEST: input_vector = Vector2Int.left()
 			case _:
 				narrator.feedback = log_invalid_direction()
-				narrator.has_updated_feedback = True
 				return
 
 		new_pos = self.pos + input_vector
@@ -519,7 +517,6 @@ class Player:
 		match target_tile.name:
 			case "wall":
 				narrator.feedback = log_hit_wall()
-				narrator.has_updated_feedback = True
 			case "passage":
 				pass # TODO: create a function to move between rooms
 			case "item":
@@ -665,8 +662,19 @@ class Narrator:
 
 	def __init__(self) -> None:
 		self.map: str = ""
-		self.feedback: str = ""
+		self.__feedback: str = ""
 		self.has_updated_feedback: bool = False
+
+	@property
+	def feedback(self) -> str:
+		return self.__feedback
+
+	@feedback.setter
+	def feedback(self, new: str) -> None:
+		if type(new) is str:
+			self.__feedback = new
+			self.has_updated_feedback = True
+		else: raise TypeError
 
 	@staticmethod
 	def get_narration(addr: int) -> str:
@@ -731,7 +739,6 @@ def title_screen(narrator: Narrator):
 		elif raw_input == "p": return
 
 		narrator.feedback = log_invalid_user_input()
-		narrator.has_updated_feedback = True
 
 def area_pos_to_index(pos: Vector2Int) -> int:
 	if pos == Vector2Int(0, 0): return 0
@@ -771,7 +778,6 @@ def get_input(narrator: Narrator) -> tuple:
 				case "quit" | "q": return (UserInput.QUIT,)
 
 	narrator.feedback = log_invalid_user_input()
-	narrator.has_updated_feedback = True
 	return ()
 
 def call_func_from_input(user_input: tuple,
@@ -780,7 +786,7 @@ def call_func_from_input(user_input: tuple,
 						is_progress_saved: bool) -> bool:
 	"""Calls a function based on the input, returns whether or not the
 	player's progress is saved."""
-	if len(user_input) == 0: return False
+	if len(user_input) == 0: return is_progress_saved
 	match user_input[0]:
 		case UserInput.MOVE:
 			file.player.move(
@@ -788,6 +794,7 @@ def call_func_from_input(user_input: tuple,
 				file.world[area_pos_to_index(file.player.area_pos)],
 				narrator
 			)
+			return False
 		case UserInput.ITEM:
 			item = None
 			has_found_item = False
@@ -806,13 +813,10 @@ def call_func_from_input(user_input: tuple,
 				item.use()
 			elif user_input[1] == ItemAction.INFO:
 				narrator.feedback = Narrator.get_narration(item.info_address)
-				narrator.has_updated_feedback = True
 		case UserInput.INV_VIEW:
 			narrator.feedback = Narrator.get_inventory(file.player)
-			narrator.has_updated_feedback = True
 		case UserInput.CMD_LIST:
 			narrator.feedback = Narrator.get_narration(1)
-			narrator.has_updated_feedback = True
 		case UserInput.SAVE:
 			file.save_files()
 		case UserInput.LOAD:
@@ -848,10 +852,10 @@ def main() -> None:
 	narrator.display(save_file)
 	while True:
 		user_input = get_input(narrator)
-		call_func_from_input(user_input,
-							save_file,
-							narrator,
-							is_progress_saved)
+		is_progress_saved = call_func_from_input(user_input,
+												save_file,
+												narrator,
+												is_progress_saved)
 		narrator.display(save_file)
 
 if __name__ == "__main__": main()
