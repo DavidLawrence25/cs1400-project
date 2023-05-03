@@ -21,7 +21,8 @@ file [option]:    Save, load, or quit the game
 It seems like last night was ages ago. You were goofing around at a
 bar with your friend, and you felt too queasy to stay there anymore.
 You don't remember much of your drunken night out, but you vaguely
-remember telling your friend to lock your high-tech front door...
+remember telling your friend to lock your high-tech front door... Too
+bad you don't remember how to unlock it.
 
 South of your full-sized bed are some double doors leading to the
 office. To the east is a closet door. To the west, you see a small
@@ -30,5 +31,11 @@ existence, you realize you should really get around to decorating
 your pathetic little bedroom. Perhaps inspiration will strike after
 a short walk around the neighborhood.
 %4%
+The poorly-lit closet seems very mundane. Some casual clothes line
+the east wall, hanging on some plastic hangers. Along the north wall,
+there are some shelves with various trinkets. Among those trinkets is
+a scrambled Rubik's Cube. The south wall is mostly empty, apart from
+eleven pairs of shoes stacked precariously on top of one another.
+%5%
 
 # note: there must always be a new line after the last address.
