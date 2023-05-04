@@ -18,6 +18,7 @@ file [option]:    Save, load, or quit the game
                    p > Play Game
                    q > Quit
 %3%
+# The Bedroom
 It seems like last night was ages ago. You were goofing around at a
 bar with your friend, and you felt too queasy to stay there anymore.
 You don't remember much of your drunken night out, but you vaguely
@@ -31,11 +32,32 @@ existence, you realize you should really get around to decorating
 your pathetic little bedroom. Perhaps inspiration will strike after
 a short walk around the neighborhood.
 %4%
+# The Closet
 The poorly-lit closet seems very mundane. Some casual clothes line
 the east wall, hanging on some plastic hangers. Along the north wall,
 there are some shelves with various trinkets. Among those trinkets is
 a scrambled Rubik's Cube. The south wall is mostly empty, apart from
 eleven pairs of shoes stacked precariously on top of one another.
 %5%
+# Family Room
+%6%
+# Kitchen/Dining Room
+%7%
+# Spooky Hallway
+%8%
+# Office
+%9%
+# Bathroom
+%10%
+# Living Room
+%11%
+# Foyer
+%12%
+# Rubik's Cube Description
+-- Rubik's Cube --
+A colorful small cube composed of 27 smaller cubiods. I think I remember
+how to solve it, but I haven't touched it in years.
+%13%
+# Use the Rubik's Cube
 
 # note: there must always be a new line after the last address.

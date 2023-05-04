@@ -265,6 +265,13 @@ def log_unsaved_progress():
 								"UnsavedProgress",
 								"You have unsaved progress. Are you sure?")
 
+def log_get_item(item_name: str):
+	"""The player collected an item"""
+
+	return CustomLogEvent.call(Logger.INFO,
+								"GetItem",
+								f"You collected a {item_name}!")
+
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -488,7 +495,7 @@ class Player:
 		self.area_pos = area_pos
 		self.inventory = []
 
-	def move(self, direction: Direction, area: Area, narrator) -> None:
+	def move(self, direction: Direction, area: Area, file, narrator) -> None:
 		"""Try to move the player in a specified direction
 
 		Args:
@@ -514,17 +521,32 @@ class Player:
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
-		match target_tile.name:
-			case "wall":
-				narrator.feedback = log_hit_wall()
-			case "passage":
-				pass # TODO: create a function to move between rooms
-			case "item":
-				pass # TODO: create a function to pick up items
-			case _: self.pos = new_pos
-
-	def change_room(self, new_area_pos: Vector2Int) -> None:
-		pass
+		if target_tile.name == "wall":
+			narrator.feedback = log_hit_wall()
+		else:
+			this_area = file.world[area_pos_to_index(self.area_pos)]
+			if target_tile.name == "passage":
+				new_pos, self.area_pos = this_area.matching_passage(new_pos)
+			elif target_tile.name == "item":
+				item_preset = ALL_ITEMS[target_tile.id]
+				if target_tile.id in self.inventory:
+					item_index = self.inventory.index(target_tile.id)
+					new_count = self.inventory[item_index].count + 1
+					self.inventory[item_index] = Item(
+						item_preset.display_name,
+						item_preset.id,
+						item_preset.consumable,
+						item_preset.func,
+						item_preset.info_address,
+						new_count
+					)
+				else:
+					self.inventory.append(ALL_ITEMS[target_tile.id])
+				
+				narrator.feedback = log_get_item(item_preset.display_name)
+				this_area.tiles[new_pos.y][new_pos.x] = Tile.air()
+			
+			self.pos = new_pos
 
 class Item:
 	"""An item inside the player's inventory
@@ -725,6 +747,7 @@ class Narrator:
 		self.has_updated_feedback = False
 
 # Functions
+## Utilities
 def title_screen(narrator: Narrator):
 	"""Display the title screen and get the appropriate input
 
@@ -745,10 +768,11 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	elif pos == Vector2Int(1, 0): return 1
 	elif pos == Vector2Int(2, 0): return 2
 	elif pos == Vector2Int(3, 0): return 3
-	elif pos == Vector2Int(0, -1): return 4
+	elif pos == Vector2Int(4, 0): return 4
 	elif pos == Vector2Int(0, -1): return 5
 	elif pos == Vector2Int(0, -1): return 6
 	elif pos == Vector2Int(0, -1): return 7
+	elif pos == Vector2Int(0, -1): return 8
 	elif type(pos) is Vector2Int: raise ValueError
 	else: raise TypeError
 
@@ -767,8 +791,8 @@ def get_input(narrator: Narrator) -> tuple:
 				case "south" | "s": return (UserInput.MOVE, Direction.SOUTH)
 				case "east" | "e": return (UserInput.MOVE, Direction.EAST)
 				case "west" | "w": return (UserInput.MOVE, Direction.WEST)
-		case "use": return (UserInput.ITEM, ItemAction.USE, *args[1:])
-		case "info": return (UserInput.ITEM, ItemAction.INFO, *args[1:])
+		case "use": return (UserInput.ITEM, ItemAction.USE, *args)
+		case "info": return (UserInput.ITEM, ItemAction.INFO, *args)
 		case "inv": return (UserInput.INV_VIEW,)
 		case "help": return (UserInput.CMD_LIST,)
 		case "file":
@@ -792,6 +816,7 @@ def call_func_from_input(user_input: tuple,
 			file.player.move(
 				user_input[1],
 				file.world[area_pos_to_index(file.player.area_pos)],
+				file,
 				narrator
 			)
 			return False
@@ -841,6 +866,15 @@ def call_func_from_input(user_input: tuple,
 			if should_quit: exit()
 	return user_input[0] in (UserInput.MOVE, UserInput.ITEM)
 
+## Item Functions
+def solve_cube():
+	pass
+
+ALL_ITEMS = {
+	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", False, solve_cube, 12)
+}
+
+## Main
 def main() -> None:
 	save_file = File()
 	narrator = Narrator()
