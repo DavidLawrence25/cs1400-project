@@ -36,6 +36,8 @@ class Vector2Int:
 		left(): Returns (-1, 0)
 
 		right(): Returns (1, 0)
+
+		get_from_user(): Returns a Vector2Int based on the user's input
 	"""
 
 	def __init__(self, x: int, y: int) -> None:
@@ -107,6 +109,8 @@ class Vector2Int:
 
 	@staticmethod
 	def get_from_user():
+		"""Asks for a vector from the user and tries to create one with
+		the information provided until it succeeds."""
 		is_valid = False
 		vector = Vector2Int.zero()
 		while not is_valid:
@@ -172,7 +176,25 @@ class ItemAction(Enum):
 
 ## Log Events
 class Logger:
-	""""""
+	"""I made a logger because the logging module didn't work for my
+	purposes
+
+	Class Constants:
+		DEBUG = "DEBUG"
+
+		INFO = "INFO"
+
+		WARNING = "WARNING"
+
+		ERROR = "ERROR"
+
+		CRITICAL = "CRITICAL"
+
+	Methods:
+		format_message(event_type, msg, level): Produces a log message
+		from the name of the event, the message, and the level of
+		severity associated with that event
+	"""
 
 	DEBUG = "DEBUG"
 	INFO = "INFO"
@@ -180,8 +202,19 @@ class Logger:
 	ERROR = "ERROR"
 	CRITICAL = "CRITICAL"
 
+	def __init__(self): return None
+
 	@staticmethod
 	def format_message(event_type: str, msg: str, level: str) -> str:
+		"""Produces a log message as a string
+
+		Args:
+			event_type: The name of the event
+
+			msg: The message associated with that event
+
+			level: How serious the event is
+		"""
 		return f"[{level}] {event_type} - {msg}"
 
 class CustomLogEvent:
@@ -266,7 +299,11 @@ def log_unsaved_progress():
 								"You have unsaved progress. Are you sure?")
 
 def log_get_item(item_name: str):
-	"""The player collected an item"""
+	"""The player collected an item
+
+	Args:
+		item_name: The name of the item the player just got
+	"""
 
 	return CustomLogEvent.call(Logger.INFO,
 								"GetItem",
@@ -293,10 +330,20 @@ class Tile:
 		passage(direction): Returns a passage pointing in the specified
 		direction
 	"""
+
 	def __init__(self,
 				name: str = "",
 				id: str = "",
 				direction: Direction | None = None) -> None:
+		"""Creates a tile object
+
+		Args:
+			name: The name of the tile used by the code to identify it
+
+			id: This specifies which item the tile represents, if any
+
+			direction: The direction a passage tile points
+		"""
 		self.name = name
 		self.id = id
 		self.direction = direction
@@ -328,9 +375,16 @@ class Area:
 
 		passages: A list of passage-passage-area tuples
 
+		narration_address: Which address to load from when in this area
+
+	Class Constants:
+		CHARSET: A set of characters to represent all possible tiles
+
 	Methods:
 		matching_passage(tile_pos): Returns the matching passage in
 		another area for a given tile in this area
+
+		get_str(player_pos): Returns a string representation of the area
 
 		create_from_str(string): Returns a new area created from a
 		string (this is a temporary method)
@@ -360,13 +414,16 @@ class Area:
 			pos: The position of the area in the map
 
 			size: The dimensions of the area measured in tiles
+
+			narration_address: Which address to load from when in this
+			area
 		"""
 		self.name = name
 		self.pos = pos
 		self.size = size
 		self.narration_address = narration_address
 		self.tiles = []
-		self.passages = [] # [(passage_a, passage_b, that_area)]
+		self.passages = []
 
 	def matching_passage(self, tile_pos: Vector2Int) -> list:
 		"""Returns the matching passage in another area for a given tile
@@ -379,6 +436,11 @@ class Area:
 		return matches[0][1:]
 
 	def get_str(self, player_pos: Vector2Int) -> str:
+		"""Gets the string representation of the area
+
+		Args:
+			player_pos: The position of the player in the current area
+		"""
 		output = ""
 		for y, row in enumerate(self.tiles):
 			for x, tile in enumerate(row):
@@ -468,7 +530,7 @@ class Player:
 		pos: The coordinates of the player in the current area relative
 		to the top-left corner (0, 0)
 
-		area: The coordinates of the current area in the world map
+		area_pos: The coordinates of the current area in the world map
 		relative to the top-left corner (0, 0)
 
 		inventory: A list containing all the items the player has
@@ -476,8 +538,6 @@ class Player:
 	Methods:
 		move(direction, area): Try to move the player in a specified
 		direction
-
-		change_room(new_area_pos): ???
 	"""
 
 	def __init__(self, pos: Vector2Int, area_pos: Vector2Int) -> None:
@@ -488,8 +548,8 @@ class Player:
 			pos: The coordinates of the player in the current area
 			relative to the top-left corner (0, 0)
 
-			area: The coordinates of the current area in the world map
-			relative to the top-left corner (0, 0)
+			area_pos: The coordinates of the current area in the world
+			map relative to the top-left corner (0, 0)
 		"""
 		self.pos = pos
 		self.area_pos = area_pos
@@ -502,6 +562,8 @@ class Player:
 			direction: The direction the player tries to move in
 
 			area: The area the player is currently in
+
+			file: The currently-loaded save file
 
 			narrator: The instance of the Narrator class
 
@@ -542,10 +604,10 @@ class Player:
 					)
 				else:
 					self.inventory.append(ALL_ITEMS[target_tile.id])
-				
+
 				narrator.feedback = log_get_item(item_preset.display_name)
 				this_area.tiles[new_pos.y][new_pos.x] = Tile.air()
-			
+
 			self.pos = new_pos
 
 class Item:
@@ -673,16 +735,24 @@ class Narrator:
 
 		feedback: The message from the most recent logging event
 
-	Constants:
+	Class Constants:
 		COMMENT_CHAR: The character for comments in narration.txt
 
 	Methods:
-		get_string(addr): Returns a string from the narration file
+		get_narration(addr): Returns a string from the narration file
+
+		get_inventory(player): Get a string representation of the
+		player's inventory
+
+		cls(): Clears the terminal
+
+		display(file): Displays the information for a given file state
 	"""
 
 	COMMENT_CHAR = "#"
 
 	def __init__(self) -> None:
+		"""Creates a narrator (this should be the only instance)"""
 		self.map: str = ""
 		self.__feedback: str = ""
 		self.has_updated_feedback: bool = False
@@ -700,13 +770,14 @@ class Narrator:
 
 	@staticmethod
 	def get_narration(addr: int) -> str:
-		"""Return a string from the narration file"""
-		# open the file
+		"""Return a string from the narration file
+
+		Args:
+			addr: The address of the narration in narration.txt
+		"""
 		with open("narration.txt", "r") as file:
-			# make address strings to check against
 			addr_start = f"%{addr}%\n"
 			addr_end = f"%{addr + 1}%\n"
-			# get the text
 			text = ""
 			is_reading = False
 			for line in file:
@@ -719,6 +790,11 @@ class Narrator:
 
 	@staticmethod
 	def get_inventory(player: Player) -> str:
+		"""Get a string representation of the player's inventory
+
+		Args:
+			player: The player object
+		"""
 		inventory = player.inventory
 		output = "-- INVENTORY --\n"
 		for item in inventory:
@@ -731,25 +807,28 @@ class Narrator:
 		system("cls" if os_name == "nt" else "clear")
 
 	def display(self, file: File) -> None:
-		# extract the area, area string, and narration
+		"""Displays the information for a given file state
+
+		Args:
+			file: The currently-loaded save file
+		"""
 		area = file.world[area_pos_to_index(file.player.area_pos)]
 		area_str = area.get_str(file.player.pos)
 		narration = Narrator.get_narration(area.narration_address)
-		# clear the terminal
 		Narrator.cls()
-		# print the stuff
-		# if the feedback's been updated, print that too
 		if self.has_updated_feedback:
 			print(f"{self.feedback}\n-- {area.name} --\n{area_str}\n{narration}")
 		else:
 			print(f"-- {area.name} --\n{area_str}\n{narration}")
-		# reset the updated feedback flag
 		self.has_updated_feedback = False
 
 # Functions
 ## Utilities
 def title_screen(narrator: Narrator):
 	"""Display the title screen and get the appropriate input
+
+	Args:
+		narrator: The unique narrator instance
 
 	Raises:
 		InvalidUserInput: The user did not give a valid input
@@ -764,6 +843,16 @@ def title_screen(narrator: Narrator):
 		narrator.feedback = log_invalid_user_input()
 
 def area_pos_to_index(pos: Vector2Int) -> int:
+	"""Converts an area's position to its index in the world
+
+	Args:
+		pos: The area's position
+
+	Raises:
+		ValueError: Inappropriate argument value (of correct type)
+
+		TypeError: Inappropriate argument type
+	"""
 	if pos == Vector2Int(0, 0): return 0
 	elif pos == Vector2Int(1, 0): return 1
 	elif pos == Vector2Int(2, 0): return 2
@@ -777,6 +866,14 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	else: raise TypeError
 
 def get_input(narrator: Narrator) -> tuple:
+	"""Get and process an input from the user
+
+	Args:
+		narrator: The unique narrator instance
+
+	Raises:
+		InvalidUserInput: The user did not give a valid input
+	"""
 	raw_input = input("> ")
 	cmd = raw_input.split(" ")[0]
 	args = raw_input.split(" ")[1:]
@@ -809,7 +906,21 @@ def call_func_from_input(user_input: tuple,
 						narrator: Narrator,
 						is_progress_saved: bool) -> bool:
 	"""Calls a function based on the input, returns whether or not the
-	player's progress is saved."""
+	player's progress is saved.
+
+	Args:
+		user_input: The result of the get_input() function
+
+		file: The currently-loaded save file
+
+		narrator: The unique narrator instance
+
+		is_progress_saved: A flag that checks whether or not the player
+		is safe to quit the file without saving beforehand
+
+	Raises:
+		UnsavedProgress: There is unsaved progress that may be erased
+	"""
 	if len(user_input) == 0: return is_progress_saved
 	match user_input[0]:
 		case UserInput.MOVE:
