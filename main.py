@@ -664,20 +664,28 @@ class Item:
 		self.info_address = info_address
 		self.count = count
 
-	def increment_count(self, step: int = 1) -> None:
+	def increment_count(self, player: Player, step: int = 1) -> None:
 		"""Adds a set amount to the count, deleting the item instance if
 		it drops below 1
 
 		Args:
+			player: The unique player instance
+
 			step: The amount to increment the count by
 		"""
 		self.count += step
-		if self.count < 1: del self
+		if self.count < 1: player.inventory.remove(self)
 
-	def use(self) -> None:
-		"""Call func and decrement count if the item is consumable"""
-		self.func()
-		if self.consumable: self.increment_count(-1)
+	def use(self, player, narrator) -> None:
+		"""Call func and decrement count if the item is consumable
+		
+		Args:
+			player: The unique player instance
+
+			narrator: The unique narrator instance
+		"""
+		self.func(player, narrator)
+		if self.consumable: self.increment_count(player, -1)
 
 class File:
 	"""A save file pulled from the SaveFile directory
@@ -796,10 +804,10 @@ class Narrator:
 			player: The player object
 		"""
 		inventory = player.inventory
-		output = "-- INVENTORY --\n"
+		output = "----- INVENTORY -----\n"
 		for item in inventory:
-			output += f"{item.display_name:<10} | {item.count:>2}\n"
-		return output
+			output += f"{item.display_name:<16} | {item.count:>2}\n"
+		return output.strip()
 
 	@staticmethod
 	def cls() -> None:
@@ -817,9 +825,18 @@ class Narrator:
 		narration = Narrator.get_narration(area.narration_address)
 		Narrator.cls()
 		if self.has_updated_feedback:
-			print(f"{self.feedback}\n-- {area.name} --\n{area_str}\n{narration}")
+			print(f"""
+-- {area.name} --
+{area_str}
+{self.feedback}
+----------------
+{narration}""")
 		else:
-			print(f"-- {area.name} --\n{area_str}\n{narration}")
+			print(f"""
+-- {area.name} --
+{area_str}
+
+{narration}""")
 		self.has_updated_feedback = False
 
 # Functions
@@ -940,13 +957,13 @@ def call_func_from_input(user_input: tuple,
 					has_found_item = True
 					break
 			if not has_found_item:
-				log_item_not_found()
+				narrator.feedback = log_item_not_found()
 				return is_progress_saved
 			if item is None:
-				log_unassigned_variable()
+				narrator.feedback = log_unassigned_variable()
 				return is_progress_saved
 			elif user_input[1] == ItemAction.USE:
-				item.use()
+				item.use(file.player, narrator)
 			elif user_input[1] == ItemAction.INFO:
 				narrator.feedback = Narrator.get_narration(item.info_address)
 		case UserInput.INV_VIEW:
@@ -975,14 +992,20 @@ def call_func_from_input(user_input: tuple,
 			else:
 				should_quit = True
 			if should_quit: exit()
-	return user_input[0] in (UserInput.MOVE, UserInput.ITEM)
+	return user_input[0] in (UserInput.MOVE, UserInput.ITEM) \
+	and is_progress_saved
 
 ## Item Functions
-def solve_cube():
-	pass
+def print_e(player: Player, narrator: Narrator):
+	narrator.feedback = narrator.get_narration(15)
+
+def solve_cube(player: Player, narrator: Narrator):
+	narrator.feedback = narrator.get_narration(13)
+	player.inventory.append(ALL_ITEMS["paper_strip"])
 
 ALL_ITEMS = {
-	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", False, solve_cube, 12)
+	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 12),
+	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 14)
 }
 
 ## Main
@@ -991,6 +1014,7 @@ def main() -> None:
 	narrator = Narrator()
 	is_progress_saved = True
 
+	Narrator.cls()
 	title_screen(narrator)
 	save_file.load_files()
 
