@@ -678,7 +678,7 @@ class Item:
 
 	def use(self, player, narrator) -> None:
 		"""Call func and decrement count if the item is consumable
-		
+
 		Args:
 			player: The unique player instance
 
@@ -825,15 +825,13 @@ class Narrator:
 		narration = Narrator.get_narration(area.narration_address)
 		Narrator.cls()
 		if self.has_updated_feedback:
-			print(f"""
--- {area.name} --
+			print(f"""-- {area.name} --
 {area_str}
 {self.feedback}
 ----------------
 {narration}""")
 		else:
-			print(f"""
--- {area.name} --
+			print(f"""-- {area.name} --
 {area_str}
 
 {narration}""")
