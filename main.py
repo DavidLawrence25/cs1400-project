@@ -898,20 +898,22 @@ def get_input(narrator: Narrator) -> tuple:
 		case "a": return (UserInput.MOVE, Direction.WEST)
 		case "d": return (UserInput.MOVE, Direction.EAST)
 		case "move":
-			match args[0]:
-				case "north" | "n": return (UserInput.MOVE, Direction.NORTH)
-				case "south" | "s": return (UserInput.MOVE, Direction.SOUTH)
-				case "east" | "e": return (UserInput.MOVE, Direction.EAST)
-				case "west" | "w": return (UserInput.MOVE, Direction.WEST)
+			if len(args) > 0:
+				match args[0]:
+					case "north" | "n": return (UserInput.MOVE, Direction.NORTH)
+					case "south" | "s": return (UserInput.MOVE, Direction.SOUTH)
+					case "east" | "e": return (UserInput.MOVE, Direction.EAST)
+					case "west" | "w": return (UserInput.MOVE, Direction.WEST)
 		case "use": return (UserInput.ITEM, ItemAction.USE, *args)
 		case "info": return (UserInput.ITEM, ItemAction.INFO, *args)
 		case "inv": return (UserInput.INV_VIEW,)
 		case "help": return (UserInput.CMD_LIST,)
 		case "file":
-			match args[0]:
-				case "save" | "s": return (UserInput.SAVE,)
-				case "load" | "l": return (UserInput.LOAD,)
-				case "quit" | "q": return (UserInput.QUIT,)
+			if len(args) > 0:
+				match args[0]:
+					case "save" | "s": return (UserInput.SAVE,)
+					case "load" | "l": return (UserInput.LOAD,)
+					case "quit" | "q": return (UserInput.QUIT,)
 
 	narrator.feedback = log_invalid_user_input()
 	return ()
