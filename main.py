@@ -950,10 +950,13 @@ def call_func_from_input(user_input: tuple,
 			item = None
 			has_found_item = False
 			for item in file.player.inventory:
-				if item.id == user_input[2]:
-					item = item
-					has_found_item = True
-					break
+				try:
+					if item.id == user_input[2]:
+						item = item
+						has_found_item = True
+						break
+				except:
+					continue
 			if not has_found_item:
 				narrator.feedback = log_item_not_found()
 				return is_progress_saved
