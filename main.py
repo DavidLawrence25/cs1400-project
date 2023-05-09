@@ -360,6 +360,10 @@ class Tile:
 	@staticmethod
 	def passage(direction: Direction):
 		return Tile("passage", direction = direction)
+	
+	@staticmethod
+	def fake_wall():
+		return Tile("fake_wall")
 
 class Area:
 	"""A detailed 2D array of tiles
@@ -395,6 +399,7 @@ class Area:
 		"player": ":)",
 		"item": "()",
 		"wall": "██",
+		"fake_wall": "██",
 		"passageL": "🡀🡀",
 		"passageR": "🡂🡂",
 		"passageU": "⬆⬆",
@@ -498,6 +503,8 @@ class Area:
 					result.tiles[y].append(Tile.item(id))
 				elif tile == "W":
 					result.tiles[y].append(Tile.wall())
+				elif tile == "?":
+					result.tiles[y].append(Tile.fake_wall())
 				elif tile == "^":
 					result.tiles[y].append(Tile.passage(Direction.NORTH))
 					result.passages.append(
@@ -1000,15 +1007,15 @@ def call_func_from_input(user_input: tuple,
 
 ## Item Functions
 def print_e(player: Player, narrator: Narrator):
-	narrator.feedback = narrator.get_narration(15)
+	narrator.feedback = narrator.get_narration(16)
 
 def solve_cube(player: Player, narrator: Narrator):
-	narrator.feedback = narrator.get_narration(13)
+	narrator.feedback = narrator.get_narration(14)
 	player.inventory.append(ALL_ITEMS["paper_strip"])
 
 ALL_ITEMS = {
-	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 12),
-	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 14)
+	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
+	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 15)
 }
 
 ## Main
@@ -1020,6 +1027,20 @@ def main() -> None:
 	Narrator.cls()
 	title_screen(narrator)
 	save_file.load_files()
+
+	save_file.world.append(Area.create_from_str("""
+          
+WWWW      
+WWWW      
+WW <      
+WWIW      
+WWWW      
+          
+          
+          
+          """, narrator))
+
+	save_file.save_files()
 
 	narrator.display(save_file)
 	while True:

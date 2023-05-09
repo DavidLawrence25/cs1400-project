@@ -45,19 +45,21 @@ eleven pairs of shoes stacked precariously on top of one another.
 %7%
 # Spooky Hallway
 %8%
-# Office
+# Hidden Bathroom
 %9%
-# Bathroom
+# Office
 %10%
-# Living Room
+# Laundry Room
 %11%
-# Foyer
+# Living Room
 %12%
+# Foyer
+%13%
 # Rubik's Cube Description
 -- Rubik's Cube --
 A colorful small cube composed of 27 smaller cubiods. I think I remember
 how to solve it, but I haven't touched it in years.
-%13%
+%14%
 # Use the Rubik's Cube
 You fiddle with the Rubik's Cube as the algorithms come back to you.
 Your moves become nearly mindless, racing to solve the cube.
@@ -67,14 +69,14 @@ revealing a small strip of paper. The only thing written on it is the
 letter "e". Strange.
 
 You pocket the paper and put the Rubik's Cube away.
-%14%
+%15%
 # Strip of Paper's Description
 -- Strip of Paper --
 A small piece of paper you found inside your Rubik's Cube. The only
 thing written on it is the letter "e". Strange.
-%15%
+%16%
 # Use the Strip of Paper
 e
-%16%
+%17%
 
 # note: there must always be a new line after the last address.
