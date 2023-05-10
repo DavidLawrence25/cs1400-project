@@ -309,6 +309,13 @@ def log_get_item(item_name: str):
 								"GetItem",
 								f"You collected a {item_name}!")
 
+def log_wrong_room():
+	"""The player tried to use an item in the wrong area"""
+
+	return CustomLogEvent.call(Logger.WARNING,
+								"WrongRoom",
+								"You can't use that item here")
+
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -360,10 +367,14 @@ class Tile:
 	@staticmethod
 	def passage(direction: Direction):
 		return Tile("passage", direction = direction)
-	
+
 	@staticmethod
 	def fake_wall():
 		return Tile("fake_wall")
+
+	@staticmethod
+	def lock(direction: Direction):
+		return Tile("lock", direction = direction)
 
 class Area:
 	"""A detailed 2D array of tiles
@@ -400,6 +411,8 @@ class Area:
 		"item": "()",
 		"wall": "██",
 		"fake_wall": "██",
+		"lockNS": "==",
+		"lockEW": "||",
 		"passageL": "🡀🡀",
 		"passageR": "🡂🡂",
 		"passageU": "⬆⬆",
@@ -460,6 +473,11 @@ class Area:
 						output += Area.CHARSET["passageR"]
 					else: # west
 						output += Area.CHARSET["passageL"]
+				elif tile.name == "lock":
+					if tile.direction in (Direction.NORTH, Direction.SOUTH):
+						output += Area.CHARSET["lockNS"]
+					else: # east & west
+						output += Area.CHARSET["lockEW"]
 				else:
 					output += Area.CHARSET[tile.name]
 			output += "\n"
@@ -505,6 +523,14 @@ class Area:
 					result.tiles[y].append(Tile.wall())
 				elif tile == "?":
 					result.tiles[y].append(Tile.fake_wall())
+				elif tile == "L":
+					result.tiles[y].append(Tile.lock(Direction.NORTH))
+				elif tile == "l":
+					result.tiles[y].append(Tile.lock(Direction.SOUTH))
+				elif tile == ")":
+					result.tiles[y].append(Tile.lock(Direction.EAST))
+				elif tile == "(":
+					result.tiles[y].append(Tile.lock(Direction.WEST))
 				elif tile == "^":
 					result.tiles[y].append(Tile.passage(Direction.NORTH))
 					result.passages.append(
@@ -590,7 +616,7 @@ class Player:
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
-		if target_tile.name == "wall":
+		if target_tile.name in ("wall", "fake_wall", "lock"):
 			narrator.feedback = log_hit_wall()
 		else:
 			this_area = file.world[area_pos_to_index(self.area_pos)]
@@ -973,7 +999,7 @@ def call_func_from_input(user_input: tuple,
 				narrator.feedback = log_unassigned_variable()
 				return is_progress_saved
 			elif user_input[1] == ItemAction.USE:
-				item.use(file.player, narrator)
+				item.use(file, narrator)
 			elif user_input[1] == ItemAction.INFO:
 				narrator.feedback = Narrator.get_narration(item.info_address)
 		case UserInput.INV_VIEW:
@@ -1006,16 +1032,27 @@ def call_func_from_input(user_input: tuple,
 	and is_progress_saved
 
 ## Item Functions
-def print_e(player: Player, narrator: Narrator):
+def print_e(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(16)
 
-def solve_cube(player: Player, narrator: Narrator):
+def solve_cube(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(14)
-	player.inventory.append(ALL_ITEMS["paper_strip"])
+	file.player.inventory.append(ALL_ITEMS["paper_strip"])
+
+def unlock_front_door(file: File, narrator: Narrator):
+	if file.player.area_pos == Vector2Int(4, -1):
+		file.world[10].tiles[9][3].name = "passage"
+		file.world[10].tiles[9][4].name = "passage"
+		file.world[10].tiles[9][5].name = "passage"
+		file.world[10].tiles[9][6].name = "passage"
+		narrator.feedback = narrator.get_narration(18)
+	else:
+		narrator.feedback = log_wrong_room()
 
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
-	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 15)
+	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 15),
+	"house_key": Item("House Key", "house_key", True, unlock_front_door, 17)
 }
 
 ## Main
@@ -1027,20 +1064,6 @@ def main() -> None:
 	Narrator.cls()
 	title_screen(narrator)
 	save_file.load_files()
-
-	save_file.world.append(Area.create_from_str("""
-          
-WWWW      
-WWWW      
-WW <      
-WWIW      
-WWWW      
-          
-          
-          
-          """, narrator))
-
-	save_file.save_files()
 
 	narrator.display(save_file)
 	while True:
