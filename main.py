@@ -697,28 +697,28 @@ class Item:
 		self.info_address = info_address
 		self.count = count
 
-	def increment_count(self, player: Player, step: int = 1) -> None:
+	def increment_count(self, file, step: int = 1) -> None:
 		"""Adds a set amount to the count, deleting the item instance if
 		it drops below 1
 
 		Args:
-			player: The unique player instance
+			file: The currently-loaded save file
 
 			step: The amount to increment the count by
 		"""
 		self.count += step
-		if self.count < 1: player.inventory.remove(self)
+		if self.count < 1: file.player.inventory.remove(self)
 
-	def use(self, player, narrator) -> None:
+	def use(self, file, narrator) -> None:
 		"""Call func and decrement count if the item is consumable
 
 		Args:
-			player: The unique player instance
+			file: The currently-loaded save file
 
 			narrator: The unique narrator instance
 		"""
-		self.func(player, narrator)
-		if self.consumable: self.increment_count(player, -1)
+		self.func(file, narrator)
+		if self.consumable: self.increment_count(file, -1)
 
 class File:
 	"""A save file pulled from the SaveFile directory
