@@ -906,10 +906,11 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	elif pos == Vector2Int(2, 0): return 2
 	elif pos == Vector2Int(3, 0): return 3
 	elif pos == Vector2Int(4, 0): return 4
-	elif pos == Vector2Int(0, -1): return 5
+	elif pos == Vector2Int(5, 0): return 5
 	elif pos == Vector2Int(0, -1): return 6
-	elif pos == Vector2Int(0, -1): return 7
-	elif pos == Vector2Int(0, -1): return 8
+	elif pos == Vector2Int(2, -1): return 7
+	elif pos == Vector2Int(3, -1): return 8
+	elif pos == Vector2Int(4, -1): return 9
 	elif type(pos) is Vector2Int: raise ValueError
 	else: raise TypeError
 
