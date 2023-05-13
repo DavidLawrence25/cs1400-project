@@ -40,6 +40,13 @@ a scrambled Rubik's Cube. The south wall is mostly empty, apart from
 eleven pairs of shoes stacked precariously on top of one another.
 %5%
 # Family Room
+You are greeted by a mediocre television setup spanning the east half of
+the room. The northeast corner is home to a u-shaped couch with a coffee
+table in front. Four mini tetrominoes sit atop the table, stacked
+together to look like they're from a game of Tetris. In the southeast
+corner, you see a wall-mounted TV beside a large bean bag chair. To the
+west, there are some bookshelves filled with seemingly random books you
+bought on a whim.
 %6%
 # Kitchen/Dining Room
 %7%
@@ -121,5 +128,14 @@ gamma = 0.577215664...
   ln2 = 0.693147180...
 sqrt2 = 1.414213562...
 %23%
+# Pumpkin's Description
+-- Pumpkin --
+A large orange gourd associated with Halloween in the United States.
+This is only a decorative one, though, so you don't have to worry about
+it rotting.
+%24%
+You stare longingly at the pumpkin. What a beautiful squash that thing
+is. Its plastic orange skin fills you with determination.
+%25%
 
 # note: there must always be a new line after the last address.
