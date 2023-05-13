@@ -316,6 +316,30 @@ def log_wrong_room():
 								"WrongRoom",
 								"You can't use that item here")
 
+def log_incorrect_combination():
+	"""The player entered an incorrect combination"""
+
+	return CustomLogEvent.call(Logger.INFO,
+								"IncorrectCombination",
+								"That was the wrong combination")
+
+def log_not_an_int(thing: str):
+	"""The code tried to cast a variable to an int, but couldn't
+
+	Args:
+		thing: The user-friendly name of the variable in question
+	"""
+
+	return CustomLogEvent.call(Logger.ERROR,
+								"NotAnInt",
+								f"{thing.title()} must be an integer")
+
+def log_incorrect_combination_length():
+	"""The combination was not 10 digits long"""
+
+	return CustomLogEvent.call(Logger.ERROR,
+								"IncorrectCombinationLength",
+								"Combination must be 10 digits long")
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -539,12 +563,24 @@ class Area:
 					result.tiles[y].append(Tile.wall_2())
 				elif tile == "L":
 					result.tiles[y].append(Tile.lock(Direction.NORTH))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
 				elif tile == "l":
 					result.tiles[y].append(Tile.lock(Direction.SOUTH))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
 				elif tile == ")":
 					result.tiles[y].append(Tile.lock(Direction.EAST))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
 				elif tile == "(":
 					result.tiles[y].append(Tile.lock(Direction.WEST))
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
 				elif tile == "^":
 					result.tiles[y].append(Tile.passage(Direction.NORTH))
 					result.passages.append(
@@ -629,7 +665,11 @@ class Player:
 				return
 
 		new_pos = self.pos + input_vector
-		target_tile = area.tiles[new_pos.y][new_pos.x]
+		if new_pos.y in range(10) and new_pos.x in range(10):
+			target_tile = area.tiles[new_pos.y][new_pos.x]
+		else:
+			narrator.feedback = log_hit_wall()
+			return
 		if target_tile.name in ("wall", "lock"):
 			narrator.feedback = log_hit_wall()
 		else:
@@ -1054,12 +1094,77 @@ def solve_cube(file: File, narrator: Narrator):
 	file.player.inventory.append(ALL_ITEMS["paper_strip"])
 
 def print_e(file: File, narrator: Narrator):
-	narrator.feedback = narrator.get_narration(16)
+	math_poster = ALL_ITEMS["math_poster"]
+	if math_poster in file.player.inventory \
+	and file.player.area_pos == Vector2Int(0, 1):
+		response = ""
+		while response not in ("yes", "y", "no", "n"):
+			response = input("Do you understand now? > ")
+		if "y" in response:
+			response = input("What is the door combination? > ")
+			try:
+				guess = int(response)
+			except ValueError:
+				narrator.feedback = log_not_an_int("combination")
+				return
+			if len(response.strip()) != 10:
+				narrator.feedback = log_incorrect_combination_length()
+			elif guess != 2718281828:
+				narrator.feedback = log_incorrect_combination()
+			else:
+				file.world[6].tiles[4][9].name = "passage"
+				file.world[7].tiles[4][0].name = "passage"
+				narrator.feedback = "[INFO] You successfully unlocked the door"
+		else:
+			narrator.feedback = "[INFO] Oh, ok. Take your time ;)"
+	else:
+		narrator.feedback = narrator.get_narration(16)
 
 def look_at_framed_paper(file: File, narrator: Narrator):
-	pass
+	narrator.feedback = narrator.get_narration(18)
 
 def unlock_front_door(file: File, narrator: Narrator):
+	VALID_COLORS = (
+		"red",
+		"orange",
+		"yellow",
+		"green",
+		"blue",
+		"purple",
+		"pink",
+		"white",
+		"black"
+	)
+	correct_colors = {"green", "white", "orange"}
+	correct_numbers = {4, 7, 9, 2, 3}
+	correct_guesses = 0
+
+	has_asked = False
+	for _ in range(3):
+		guess = ""
+		while guess not in VALID_COLORS:
+			if has_asked: print("[WARNING] That isn't a standard color")
+			guess = input("Name a color based on the items you've seen\n> ").lower()
+			if guess in correct_colors:
+				correct_guesses += 1
+				correct_colors.remove(guess)
+			has_asked = True
+
+	has_asked = False
+	for _ in range(5):
+		guess = 11
+		while guess not in range(10):
+			if has_asked: print("[WARNING] The number must be between 0 & 9")
+			guess = int(input("Name a number based on the items you've seen\n> "))
+			if guess in correct_numbers:
+				correct_guesses += 1
+				correct_numbers.remove(guess)
+			has_asked = True
+
+	if correct_guesses != 8:
+		narrator.feedback = log_incorrect_combination()
+		return
+
 	if file.player.area_pos == Vector2Int(4, 1):
 		file.world[10].tiles[9][3].name = "passage"
 		file.world[10].tiles[9][4].name = "passage"
@@ -1070,7 +1175,7 @@ def unlock_front_door(file: File, narrator: Narrator):
 		narrator.feedback = log_wrong_room()
 
 def read_poster(file: File, narrator: Narrator):
-	pass
+	narrator.feedback = narrator.get_narration(22)
 
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),

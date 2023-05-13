@@ -48,8 +48,24 @@ eleven pairs of shoes stacked precariously on top of one another.
 # Hidden Bathroom
 %9%
 # Office
+Your simplistic office fills you with peace as the radiant morning sun
+beams in through the window. Near the center of the room is your desk: a
+standard rectangular wooden table with a laptop, an empty mug, and a
+large metal slinky. Some cabinets line the south wall, but you've never
+actually used them. The northeast corner houses a gray filing cabinet
+and a math poster.
+
+The rest of your house is locked behind the east door. All you remember
+is that it has a 10-digit combination lock.
 %10%
 # Laundry Room
+You look around the laundry room. It's nothing to write home about.
+There is a washing machine and a dryer pushed up against the south wall,
+both of which are currently off. Along the west wall is a couple of
+shelves with various cleaners and detergents. In the northeast corner, a
+comically large laundry basket sits there, reeking of sweat and wet
+grass. You silently promise to do the laundry as soon as you come back
+from that walk.
 %11%
 # Living Room
 %12%
@@ -72,11 +88,38 @@ You pocket the paper and put the Rubik's Cube away.
 %15%
 # Strip of Paper's Description
 -- Strip of Paper --
-A small piece of paper you found inside your Rubik's Cube. The only
-thing written on it is the letter "e". Strange.
+A small piece of paper you found inside your Rubik's Cube. You're not
+sure if it's an important detail, but it came out of the green side.
+The only thing written on it is the letter "e". Strange.
 %16%
 # Use the Strip of Paper
 e
 %17%
+# Framed Paper's Description
+-- Framed Paper --
+It's just a blank paper inside a picture frame...
+%18%
+# Use the Framed Paper
+...what did you expect it to do?
+%19%
+# House Key's Description
+-- House Key --
+A key that helps unlock the front door to your house.
+%20%
+# Use the House Key
+You successfully unlocked the front door.
+%21%
+# Math Poster's Description
+-- Math Poster --
+A poster with various mathematical constants on it.
+%22%
+# Use the Math Poster
+   pi = 3.141592653...
+gamma = 0.577215664...
+    e = 2.718281828...
+  phi = 1.618033988...
+  ln2 = 0.693147180...
+sqrt2 = 1.414213562...
+%23%
 
 # note: there must always be a new line after the last address.
