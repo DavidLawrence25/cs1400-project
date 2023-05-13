@@ -341,7 +341,8 @@ class Tile:
 	def __init__(self,
 				name: str = "",
 				id: str = "",
-				direction: Direction | None = None) -> None:
+				direction: Direction | None = None,
+				appearance: str = "") -> None:
 		"""Creates a tile object
 
 		Args:
@@ -350,10 +351,14 @@ class Tile:
 			id: This specifies which item the tile represents, if any
 
 			direction: The direction a passage tile points
+
+			appearance: An alternate string to display instead of the
+			default specified in the Area class' CHARSET constant
 		"""
 		self.name = name
 		self.id = id
 		self.direction = direction
+		self.appearance = appearance
 
 	@staticmethod
 	def air(): return Tile("air")
@@ -365,12 +370,15 @@ class Tile:
 	def wall(): return Tile("wall")
 
 	@staticmethod
+	def wall_2(): return Tile("wall", appearance="▒▒")
+
+	@staticmethod
 	def passage(direction: Direction):
 		return Tile("passage", direction = direction)
 
 	@staticmethod
 	def fake_wall():
-		return Tile("fake_wall")
+		return Tile("passage", appearance="██")
 
 	@staticmethod
 	def lock(direction: Direction):
@@ -410,7 +418,6 @@ class Area:
 		"player": ":)",
 		"item": "()",
 		"wall": "██",
-		"fake_wall": "██",
 		"lockNS": "==",
 		"lockEW": "||",
 		"passageL": "🡀🡀",
@@ -464,6 +471,8 @@ class Area:
 			for x, tile in enumerate(row):
 				if Vector2Int(x, y) == player_pos:
 					output += Area.CHARSET["player"]
+				elif tile.appearance != "":
+					output += tile.appearance
 				elif tile.name == "passage":
 					if tile.direction == Direction.NORTH:
 						output += Area.CHARSET["passageU"]
@@ -471,7 +480,7 @@ class Area:
 						output += Area.CHARSET["passageD"]
 					elif tile.direction == Direction.EAST:
 						output += Area.CHARSET["passageR"]
-					else: # west
+					elif tile.direction == Direction.WEST:
 						output += Area.CHARSET["passageL"]
 				elif tile.name == "lock":
 					if tile.direction in (Direction.NORTH, Direction.SOUTH):
@@ -514,7 +523,7 @@ class Area:
 		for y, line in enumerate(lines):
 			result.tiles.append([])
 			for x, tile in enumerate(line):
-				if tile == " ":
+				if tile == "A":
 					result.tiles[y].append(Tile.air())
 				elif tile == "I":
 					id = input("Enter item id > ")
@@ -523,6 +532,11 @@ class Area:
 					result.tiles[y].append(Tile.wall())
 				elif tile == "?":
 					result.tiles[y].append(Tile.fake_wall())
+					result.passages.append(
+						Area.generate_passage_pair(Vector2Int(x, y))
+					)
+				elif tile == "O":
+					result.tiles[y].append(Tile.wall_2())
 				elif tile == "L":
 					result.tiles[y].append(Tile.lock(Direction.NORTH))
 				elif tile == "l":
@@ -616,7 +630,7 @@ class Player:
 
 		new_pos = self.pos + input_vector
 		target_tile = area.tiles[new_pos.y][new_pos.x]
-		if target_tile.name in ("wall", "fake_wall", "lock"):
+		if target_tile.name in ("wall", "lock"):
 			narrator.feedback = log_hit_wall()
 		else:
 			this_area = file.world[area_pos_to_index(self.area_pos)]
@@ -859,12 +873,14 @@ class Narrator:
 		Narrator.cls()
 		if self.has_updated_feedback:
 			print(f"""-- {area.name} --
+
 {area_str}
 {self.feedback}
 ----------------
 {narration}""")
 		else:
 			print(f"""-- {area.name} --
+
 {area_str}
 
 {narration}""")
@@ -907,10 +923,10 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	elif pos == Vector2Int(3, 0): return 3
 	elif pos == Vector2Int(4, 0): return 4
 	elif pos == Vector2Int(5, 0): return 5
-	elif pos == Vector2Int(0, -1): return 6
-	elif pos == Vector2Int(2, -1): return 7
-	elif pos == Vector2Int(3, -1): return 8
-	elif pos == Vector2Int(4, -1): return 9
+	elif pos == Vector2Int(0, 1): return 6
+	elif pos == Vector2Int(2, 1): return 7
+	elif pos == Vector2Int(3, 1): return 8
+	elif pos == Vector2Int(4, 1): return 9
 	elif type(pos) is Vector2Int: raise ValueError
 	else: raise TypeError
 
@@ -1029,31 +1045,39 @@ def call_func_from_input(user_input: tuple,
 			else:
 				should_quit = True
 			if should_quit: exit()
-	return user_input[0] in (UserInput.MOVE, UserInput.ITEM) \
+	return user_input[0] in (UserInput.MOVE, UserInput.ITEM, UserInput.SAVE) \
 	and is_progress_saved
 
 ## Item Functions
-def print_e(file: File, narrator: Narrator):
-	narrator.feedback = narrator.get_narration(16)
-
 def solve_cube(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(14)
 	file.player.inventory.append(ALL_ITEMS["paper_strip"])
 
+def print_e(file: File, narrator: Narrator):
+	narrator.feedback = narrator.get_narration(16)
+
+def look_at_framed_paper(file: File, narrator: Narrator):
+	pass
+
 def unlock_front_door(file: File, narrator: Narrator):
-	if file.player.area_pos == Vector2Int(4, -1):
+	if file.player.area_pos == Vector2Int(4, 1):
 		file.world[10].tiles[9][3].name = "passage"
 		file.world[10].tiles[9][4].name = "passage"
 		file.world[10].tiles[9][5].name = "passage"
 		file.world[10].tiles[9][6].name = "passage"
-		narrator.feedback = narrator.get_narration(18)
+		narrator.feedback = narrator.get_narration(20)
 	else:
 		narrator.feedback = log_wrong_room()
+
+def read_poster(file: File, narrator: Narrator):
+	pass
 
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
 	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 15),
-	"house_key": Item("House Key", "house_key", True, unlock_front_door, 17)
+	"framed_paper": Item("Framed Paper", "framed_paper", False, look_at_framed_paper, 17),
+	"house_key": Item("House Key", "house_key", True, unlock_front_door, 19),
+	"math_poster": Item("Math Poster", "math_poster", False, read_poster, 21)
 }
 
 ## Main
