@@ -340,6 +340,7 @@ def log_incorrect_combination_length():
 	return CustomLogEvent.call(Logger.ERROR,
 								"IncorrectCombinationLength",
 								"Combination must be 10 digits long")
+
 ## Main
 class Tile:
 	"""A basic tile meant to be stored inside an Area's tiles array
@@ -810,10 +811,11 @@ class File:
 			if name == "world": self.world = pickle.load(file)
 			elif name == "player": self.player = pickle.load(file)
 
-	def save_files(self) -> None:
+	def save_files(self, narrator) -> None:
 		"""Saves data from this instance to the SaveFile directory"""
 		self.save_file("world")
 		self.save_file("player")
+		narrator.feedback = "[INFO] File saved successfully"
 
 	def save_file(self, name: str) -> None:
 		with open(str(SAVE_FILE_PATHS[name]), "wb") as file:
@@ -1063,7 +1065,7 @@ def call_func_from_input(user_input: tuple,
 		case UserInput.CMD_LIST:
 			narrator.feedback = Narrator.get_narration(1)
 		case UserInput.SAVE:
-			file.save_files()
+			file.save_files(narrator)
 		case UserInput.LOAD:
 			should_quit = False
 			if not is_progress_saved:
