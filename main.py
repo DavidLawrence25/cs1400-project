@@ -678,19 +678,18 @@ class Player:
 				new_pos, self.area_pos = this_area.matching_passage(new_pos)
 			elif target_tile.name == "item":
 				item_preset = ALL_ITEMS[target_tile.id]
-				if target_tile.id in self.inventory:
-					item_index = self.inventory.index(target_tile.id)
-					new_count = self.inventory[item_index].count + 1
-					self.inventory[item_index] = Item(
-						item_preset.display_name,
-						item_preset.id,
-						item_preset.consumable,
-						item_preset.func,
-						item_preset.info_address,
-						new_count
-					)
+				matches = []
+				for i, item in enumerate(self.inventory):
+					if item.id == target_tile.id:
+						matches.append(item)
+						matches.append(i)
+						break
+				if len(matches) != 0:
+					current_item, index = matches
+					current_item.count += 1
+					self.inventory[index] = current_item
 				else:
-					self.inventory.append(ALL_ITEMS[target_tile.id])
+					self.inventory.append(item_preset)
 
 				narrator.feedback = log_get_item(item_preset.display_name)
 				this_area.tiles[new_pos.y][new_pos.x] = Tile.air()
@@ -1175,7 +1174,31 @@ def unlock_front_door(file: File, narrator: Narrator):
 		narrator.feedback = log_wrong_room()
 
 def read_poster(file: File, narrator: Narrator):
-	narrator.feedback = narrator.get_narration(22)
+	math_poster = ALL_ITEMS["paper_strip"]
+	if math_poster in file.player.inventory \
+	and file.player.area_pos == Vector2Int(0, 1):
+		response = ""
+		while response not in ("yes", "y", "no", "n"):
+			response = input("Do you understand now? > ")
+		if "y" in response:
+			response = input("What is the door combination? > ")
+			try:
+				guess = int(response)
+			except ValueError:
+				narrator.feedback = log_not_an_int("combination")
+				return
+			if len(response.strip()) != 10:
+				narrator.feedback = log_incorrect_combination_length()
+			elif guess != 2718281828:
+				narrator.feedback = log_incorrect_combination()
+			else:
+				file.world[6].tiles[4][9].name = "passage"
+				file.world[7].tiles[4][0].name = "passage"
+				narrator.feedback = "[INFO] You successfully unlocked the door"
+		else:
+			narrator.feedback = "[INFO] Oh, ok. Take your time ;)"
+	else:
+		narrator.feedback = narrator.get_narration(22)
 
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
