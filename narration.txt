@@ -137,5 +137,28 @@ it rotting.
 You stare longingly at the pumpkin. What a beautiful squash that thing
 is. Its plastic orange skin fills you with determination.
 %25%
+# Penguin's Description
+-- Penguin --
+A helpful little penguin you keep in your kitchen. It only responds to
+your voice and will remember secrets you tell it in case you forget.
+Unfortunately, the developer couldn't be bothered to let you tell it new
+secrets, so you're stuck with the hard-coded ones. Sorry.
+%26%
+# Use the Penguin (1)
+hey, in case your bladder is getting a bit full, you have a secret
+bathroom in the spooky hallway. if you line yourself up vertically with
+the tip of the middle wall, you can walk into the westmost wall and find
+it. sorry if that's confusing, but you should find it soon enough.
+%27%
+# Use the Penguin (2)
+hey, you know how the strip of paper came out of the green side? i think
+the front door likes that color. also, the two most numerous items in
+your house are the door's favorite colors.
+%28%
+# Use the Penguin (3)
+hey, you know how the front door wants five digits? you might be able to
+figure them out by counting things which occur in strangely specific
+quantities. also, it may be beneficial to remember that tetra = 4.
+%29%
 
 # note: there must always be a new line after the last address.

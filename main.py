@@ -4,6 +4,7 @@ from enum import Enum, auto
 from pathlib import Path
 from os import system
 from os import name as os_name
+from random import randint
 import pickle
 
 APP_ROOT = Path(".")
@@ -1208,13 +1209,17 @@ def read_poster(file: File, narrator: Narrator):
 def admire_pumpkin(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(24)
 
+def talk_to_penguin(file: File, narrator: Narrator):
+	narrator.feedback = narrator.get_narration(randint(26, 28))
+
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
 	"paper_strip": Item("Paper Strip", "paper_strip", False, print_e, 15),
 	"framed_paper": Item("Framed Paper", "framed_paper", False, look_at_framed_paper, 17),
 	"pumpkin": Item("Pumpkin", "pumpkin", False, admire_pumpkin, 23),
 	"house_key": Item("House Key", "house_key", True, unlock_front_door, 19),
-	"math_poster": Item("Math Poster", "math_poster", False, read_poster, 21)
+	"math_poster": Item("Math Poster", "math_poster", False, read_poster, 21),
+	"penguin": Item("Penguin", "penguin", False, talk_to_penguin, 25)
 }
 
 ## Main
@@ -1226,17 +1231,6 @@ def main() -> None:
 	Narrator.cls()
 	title_screen(narrator)
 	save_file.load_files()
-
-	save_file.world[4].tiles[1][4] = Tile.item("pumpkin")
-	save_file.world[4].tiles[1][5] = Tile.item("pumpkin")
-	save_file.world[4].tiles[1][8] = Tile.item("pumpkin")
-	save_file.world[4].tiles[2][4] = Tile.item("pumpkin")
-	save_file.world[4].tiles[2][8] = Tile.item("pumpkin")
-	save_file.world[4].tiles[5][4] = Tile.item("pumpkin")
-	save_file.world[4].tiles[5][7] = Tile.item("pumpkin")
-	save_file.world[4].tiles[6][7] = Tile.item("pumpkin")
-	save_file.world[4].tiles[8][5] = Tile.item("pumpkin")
-	save_file.save_files(narrator)
 
 	narrator.display(save_file)
 	while True:
