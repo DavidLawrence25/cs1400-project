@@ -49,10 +49,23 @@ west, there are some bookshelves filled with seemingly random books you
 bought on a whim.
 %6%
 # Kitchen/Dining Room
+You step into the dining area which also doubles as your personal
+kitchen. A window hangs above the countertop on the north side, shining
+the morning light onto the dinner table. Beside the counter in the
+northwest corner, you see a small penguin sitting there. Some seating
+adorns the table and countertop, but you usually only need one chair.
 %7%
 # Spooky Hallway
+Before you is an unnecessarily long hallway lit by nothing but a few
+electronic candles mounted on the walls. Several pumpkins line the hall,
+but you aren't sure why. It'd probably be faster to go through the
+living room to reach the foyer.
 %8%
 # Hidden Bathroom
+What. The. Heck. Why is there a hidden bathroom in my house? Who decided
+this would be a good idea? It's so small--anyway, there's a key hanging
+on a hook across from the toilet. The entire west wall is covered by a
+counter and a sink, so you only have a 1x2 area to walk around in.
 %9%
 # Office
 Your simplistic office fills you with peace as the radiant morning sun
@@ -75,8 +88,19 @@ grass. You silently promise to do the laundry as soon as you come back
 from that walk.
 %11%
 # Living Room
+The living room feels mildly melancholic. A fragmented ring of couches
+circle the room, leaving room for the two entrances and a small table in
+the northeast corner of the room. In the center of the room, you see a
+large coffee table with three lamps placed on it. The carpet under your
+feet calms your existential dread a little bit.
 %12%
 # Foyer
+You enter an open space; it's a nice break from some other rooms in your
+house. A large circular rug with a peculiar pattern occupies most of the
+floor. There are two paintings in the room: one of a daisy in a vase on
+the north wall, and another of a llama on the east wall. To the west is
+a large archway leading to the living room. There's also a small doorway
+in the northeast corner.
 %13%
 # Rubik's Cube Description
 -- Rubik's Cube --
