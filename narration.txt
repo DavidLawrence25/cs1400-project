@@ -184,5 +184,9 @@ hey, you know how the front door wants five digits? you might be able to
 figure them out by counting things which occur in strangely specific
 quantities. also, it may be beneficial to remember that tetra = 4.
 %29%
+# Win Message
+You open your front door. Finally, you can go on that walk.
 
-# note: there must always be a new line after the last address.
+Thanks for playing! :3
+%30%
+# note: there must always be a new line character after the last address.

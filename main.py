@@ -775,8 +775,9 @@ class Item:
 
 			narrator: The unique narrator instance
 		"""
-		self.func(file, narrator)
-		if self.consumable: self.increment_count(file, -1)
+		was_action_success = self.func(file, narrator)
+		if self.consumable and was_action_success:
+			self.increment_count(file, -1)
 
 class File:
 	"""A save file pulled from the SaveFile directory
@@ -972,6 +973,10 @@ def area_pos_to_index(pos: Vector2Int) -> int:
 	elif pos == Vector2Int(2, 1): return 7
 	elif pos == Vector2Int(3, 1): return 8
 	elif pos == Vector2Int(4, 1): return 9
+	elif pos == Vector2Int(4, 2):
+		Narrator.cls()
+		print(Narrator.get_narration(29))
+		exit()
 	elif type(pos) is Vector2Int: raise ValueError
 	else: raise TypeError
 
@@ -1097,6 +1102,7 @@ def call_func_from_input(user_input: tuple,
 def solve_cube(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(14)
 	file.player.inventory.append(ALL_ITEMS["paper_strip"])
+	return True
 
 def print_e(file: File, narrator: Narrator):
 	math_poster = ALL_ITEMS["math_poster"]
@@ -1111,24 +1117,34 @@ def print_e(file: File, narrator: Narrator):
 				guess = int(response)
 			except ValueError:
 				narrator.feedback = log_not_an_int("combination")
-				return
+				return False
 			if len(response.strip()) != 10:
 				narrator.feedback = log_incorrect_combination_length()
+				return False
 			elif guess != 2718281828:
 				narrator.feedback = log_incorrect_combination()
+				return False
 			else:
 				file.world[6].tiles[4][9].name = "passage"
 				file.world[7].tiles[4][0].name = "passage"
 				narrator.feedback = "[INFO] You successfully unlocked the door"
+				return True
 		else:
 			narrator.feedback = "[INFO] Oh, ok. Take your time ;)"
+			return False
 	else:
 		narrator.feedback = narrator.get_narration(16)
+		return True
 
 def look_at_framed_paper(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(18)
+	return True
 
 def unlock_front_door(file: File, narrator: Narrator):
+	if file.player.area_pos != Vector2Int(4, 1):
+		narrator.feedback = log_wrong_room()
+		return False
+	
 	VALID_COLORS = (
 		"red",
 		"orange",
@@ -1153,7 +1169,9 @@ def unlock_front_door(file: File, narrator: Narrator):
 			if guess in correct_colors:
 				correct_guesses += 1
 				correct_colors.remove(guess)
-			has_asked = True
+				has_asked = False
+			else:
+				has_asked = True
 
 	has_asked = False
 	for _ in range(5):
@@ -1164,20 +1182,20 @@ def unlock_front_door(file: File, narrator: Narrator):
 			if guess in correct_numbers:
 				correct_guesses += 1
 				correct_numbers.remove(guess)
-			has_asked = True
+				has_asked = False
+			else:
+				has_asked = True
 
 	if correct_guesses != 8:
 		narrator.feedback = log_incorrect_combination()
-		return
-
-	if file.player.area_pos == Vector2Int(4, 1):
-		file.world[10].tiles[9][3].name = "passage"
-		file.world[10].tiles[9][4].name = "passage"
-		file.world[10].tiles[9][5].name = "passage"
-		file.world[10].tiles[9][6].name = "passage"
-		narrator.feedback = narrator.get_narration(20)
-	else:
-		narrator.feedback = log_wrong_room()
+		return False
+	
+	file.world[9].tiles[9][3].name = "passage"
+	file.world[9].tiles[9][4].name = "passage"
+	file.world[9].tiles[9][5].name = "passage"
+	file.world[9].tiles[9][6].name = "passage"
+	narrator.feedback = narrator.get_narration(20)
+	return True
 
 def read_poster(file: File, narrator: Narrator):
 	math_poster = ALL_ITEMS["paper_strip"]
@@ -1192,25 +1210,32 @@ def read_poster(file: File, narrator: Narrator):
 				guess = int(response)
 			except ValueError:
 				narrator.feedback = log_not_an_int("combination")
-				return
+				return False
 			if len(response.strip()) != 10:
 				narrator.feedback = log_incorrect_combination_length()
+				return False
 			elif guess != 2718281828:
 				narrator.feedback = log_incorrect_combination()
+				return False
 			else:
 				file.world[6].tiles[4][9].name = "passage"
 				file.world[7].tiles[4][0].name = "passage"
 				narrator.feedback = "[INFO] You successfully unlocked the door"
+				return True
 		else:
 			narrator.feedback = "[INFO] Oh, ok. Take your time ;)"
+			return False
 	else:
 		narrator.feedback = narrator.get_narration(22)
+		return True
 
 def admire_pumpkin(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(24)
+	return True
 
 def talk_to_penguin(file: File, narrator: Narrator):
 	narrator.feedback = narrator.get_narration(randint(26, 28))
+	return True
 
 ALL_ITEMS = {
 	"rubiks_cube": Item("Rubik's Cube", "rubiks_cube", True, solve_cube, 13),
